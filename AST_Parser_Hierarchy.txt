@@ -1,0 +1,188 @@
+.
+├── AST_Parser_Class_Diagram.puml
+├── AST_Parser_Class_Diagram.svg
+├── AST_Parser_Hierarchy.txt
+├── altCodeTable.md
+├── pom.xml
+├── src
+│   ├── main
+│   │   ├── java
+│   │   │   ├── calculators
+│   │   │   │   ├── RankingCalculator.java
+│   │   │   │   ├── StatisticsCalculator.java
+│   │   │   │   └── ThresholdCalculator.java
+│   │   │   ├── callgraph
+│   │   │   │   ├── CallGraphAnalyzer.java
+│   │   │   │   ├── CallGraphBuilder.java
+│   │   │   │   ├── CallGraphVisitor.java
+│   │   │   │   └── MethodCallResolver.java
+│   │   │   ├── config
+│   │   │   │   ├── AnalysisConfiguration.java
+│   │   │   │   └── Constants.java
+│   │   │   ├── core
+│   │   │   │   ├── ASTProcessor.java
+│   │   │   │   ├── AnalysisResult.java
+│   │   │   │   └── ProjectExplorer.java
+│   │   │   ├── extractors
+│   │   │   │   ├── MetricExtractor.java
+│   │   │   │   ├── MetricExtractorFactory.java
+│   │   │   │   ├── advanced
+│   │   │   │   │   ├── MaxParametersExtractor.java
+│   │   │   │   │   └── ThresholdMethodCountExtractor.java
+│   │   │   │   ├── averages
+│   │   │   │   │   ├── AverageFieldsPerClassExtractor.java
+│   │   │   │   │   ├── AverageLOCPerMethodExtractor.java
+│   │   │   │   │   └── AverageMethodsPerClassExtractor.java
+│   │   │   │   ├── basic
+│   │   │   │   │   ├── ClassCountExtractor.java
+│   │   │   │   │   ├── LinesOfCodeExtractor.java
+│   │   │   │   │   ├── MethodCountExtractor.java
+│   │   │   │   │   └── PackageCountExtractor.java
+│   │   │   │   └── ranking
+│   │   │   │       ├── IntersectionExtractor.java
+│   │   │   │       ├── TopFieldCountClassesExtractor.java
+│   │   │   │       ├── TopMethodCountClassesExtractor.java
+│   │   │   │       └── TopMethodLOCExtractor.java
+│   │   │   ├── mainApplication
+│   │   │   │   └── Main.java
+│   │   │   ├── model
+│   │   │   │   ├── metrics
+│   │   │   │   │   ├── ClassMetrics.java
+│   │   │   │   │   ├── ProjectMetrics.java
+│   │   │   │   │   └── StatisticalData.java
+│   │   │   │   ├── project
+│   │   │   │   │   ├── JavaProject.java
+│   │   │   │   │   └── PackageInfo.java
+│   │   │   │   └── structural
+│   │   │   │       ├── ClassInfo.java
+│   │   │   │       ├── FieldInfo.java
+│   │   │   │       ├── MethodCall.java
+│   │   │   │       └── MethodInfo.java
+│   │   │   ├── parser
+│   │   │   │   ├── ASTParserFacade.java
+│   │   │   │   ├── JavaFileParser.java
+│   │   │   │   └── ParseConfiguration.java
+│   │   │   ├── ui
+│   │   │   │   ├── cli
+│   │   │   │   │   ├── CLIInterface.java
+│   │   │   │   │   └── Commandparser.java
+│   │   │   │   └── gui
+│   │   │   │       ├── CallGraphPanel.java
+│   │   │   │       ├── MainWindow.java
+│   │   │   │       └── MetricsPanel.java
+│   │   │   ├── utils
+│   │   │   │   ├── CollectionUtils.java
+│   │   │   │   ├── FileUtils.java
+│   │   │   │   └── StringUtils.java
+│   │   │   └── visitors
+│   │   │       ├── base
+│   │   │       │   ├── BaseASTVisitor.java
+│   │   │       │   └── VisitorResult.java
+│   │   │       ├── metrics
+│   │   │       │   ├── ComplexityVisitor.java
+│   │   │       │   ├── CouplingVisitor.java
+│   │   │       │   └── LinesOfCodeVisitor.java
+│   │   │       └── structural
+│   │   │           ├── ClassStructureVisitor.java
+│   │   │           ├── InheritanceVisitor.java
+│   │   │           └── PackageStructureVisitor.java
+│   │   └── resources
+│   └── test
+│       ├── java
+│       └── resources
+├── structure.md
+└── target
+    ├── classes
+    │   ├── META-INF
+    │   │   ├── MANIFEST.MF
+    │   │   └── maven
+    │   │       └── HAI913I
+    │   │           └── TP1
+    │   │               ├── pom.properties
+    │   │               └── pom.xml
+    │   ├── calculators
+    │   │   ├── RankingCalculator.class
+    │   │   ├── StatisticsCalculator.class
+    │   │   └── ThresholdCalculator.class
+    │   ├── callgraph
+    │   │   ├── CallGraphAnalyzer.class
+    │   │   ├── CallGraphBuilder.class
+    │   │   ├── CallGraphVisitor.class
+    │   │   └── MethodCallResolver.class
+    │   ├── config
+    │   │   ├── AnalysisConfiguration.class
+    │   │   └── Constants.class
+    │   ├── core
+    │   │   ├── ASTProcessor.class
+    │   │   ├── AnalysisResult.class
+    │   │   └── ProjectExplorer.class
+    │   ├── extractors
+    │   │   ├── MetricExtractor.class
+    │   │   ├── MetricExtractorFactory.class
+    │   │   ├── advanced
+    │   │   │   ├── MaxParametersExtractor.class
+    │   │   │   └── ThresholdMethodCountExtractor.class
+    │   │   ├── averages
+    │   │   │   ├── AverageFieldsPerClassExtractor.class
+    │   │   │   ├── AverageLOCPerMethodExtractor.class
+    │   │   │   └── AverageMethodsPerClassExtractor.class
+    │   │   ├── basic
+    │   │   │   ├── ClassCountExtractor.class
+    │   │   │   ├── LinesOfCodeExtractor.class
+    │   │   │   ├── MethodCountExtractor.class
+    │   │   │   └── PackageCountExtractor.class
+    │   │   └── ranking
+    │   │       ├── IntersectionExtractor.class
+    │   │       ├── TopFieldCountClassesExtractor.class
+    │   │       ├── TopMethodCountClassesExtractor.class
+    │   │       └── TopMethodLOCExtractor.class
+    │   ├── mainApplication
+    │   │   └── Main.class
+    │   ├── model
+    │   │   ├── metrics
+    │   │   │   ├── ClassMetrics.class
+    │   │   │   ├── ProjectMetrics.class
+    │   │   │   └── StatisticalData.class
+    │   │   ├── project
+    │   │   │   ├── JavaProject.class
+    │   │   │   └── PackageInfo.class
+    │   │   └── structural
+    │   │       ├── ClassInfo.class
+    │   │       ├── FieldInfo.class
+    │   │       ├── MethodCall.class
+    │   │       └── MethodInfo.class
+    │   ├── parser
+    │   │   ├── ASTParserFacade.class
+    │   │   ├── JavaFileParser.class
+    │   │   └── ParseConfiguration.class
+    │   ├── ui
+    │   │   ├── cli
+    │   │   │   ├── CLIInterface.class
+    │   │   │   └── Commandparser.class
+    │   │   └── gui
+    │   │       ├── CallGraphPanel.class
+    │   │       ├── MainWindow.class
+    │   │       └── MetricsPanel.class
+    │   ├── utils
+    │   │   ├── CollectionUtils.class
+    │   │   ├── FileUtils.class
+    │   │   └── StringUtils.class
+    │   └── visitors
+    │       ├── base
+    │       │   ├── BaseASTVisitor.class
+    │       │   └── VisitorResult.class
+    │       ├── metrics
+    │       │   ├── ComplexityVisitor.class
+    │       │   ├── CouplingVisitor.class
+    │       │   └── LinesOfCodeVisitor.class
+    │       └── structural
+    │           ├── ClassStructureVisitor.class
+    │           ├── InheritanceVisitor.class
+    │           └── PackageStructureVisitor.class
+    ├── generated-sources
+    │   └── annotations
+    ├── generated-test-sources
+    │   └── test-annotations
+    └── test-classes
+
+65 directories, 121 files

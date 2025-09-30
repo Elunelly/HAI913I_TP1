@@ -1,0 +1,420 @@
+@startuml AST_Parser_Class_Diagram
+
+!theme reddress-darkred
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "core" {
+    class Main {
+        +{static} main(String[] args)
+    }
+    
+    class ASTProcessor {
+        -List<BaseASTVisitor> visitors
+        -List<MetricExtractor> extractors
+        -ASTParserFacade parserFacade
+        -ProjectExplorer explorer
+        -StatisticsCalculator calculator
+        +AnalysisResult processProject(String path)
+        +void addVisitor(BaseASTVisitor visitor)
+        +void addExtractor(MetricExtractor extractor)
+        -void executeVisitors(JavaProject project)
+        -void calculateMetrics(AnalysisResult result)
+    }
+    
+    class ProjectExplorer {
+        +List<File> discoverJavaFiles(String projectPath)
+        -void exploreDirectory(File dir, List<File> files)
+        +boolean isValidJavaFile(File file)
+    }
+    
+    class AnalysisResult {
+        -JavaProject project
+        -Map<String, Object> metrics
+        -List<ClassInfo> classes
+        -List<MethodCall> methodCalls
+        +void addMetric(String name, Object value)
+        +Object getMetric(String name)
+        +JavaProject getProject()
+    }
+}
+
+package "parser" {
+    class ASTParserFacade {
+        -ASTParser parser
+        -ParseConfiguration config
+        +CompilationUnit parseFile(File javaFile)
+        +CompilationUnit parseSource(String source)
+        +void configureParser(ParseConfiguration config)
+        -ASTParser createDefaultParser()
+    }
+    
+    class JavaFileParser {
+        +CompilationUnit parse(String source)
+        +List<CompilationUnit> parseMultiple(List<File> files)
+    }
+    
+    class ParseConfiguration {
+        -int javaLevel
+        -boolean resolveBindings
+        -String[] classpath
+        +ParseConfiguration withJavaLevel(int level)
+        +ParseConfiguration withBindings(boolean resolve)
+    }
+}
+
+package "visitors.base" {
+    abstract class BaseASTVisitor {
+        #VisitorResult result
+        +{abstract} VisitorResult visit(JavaProject project)
+        +{abstract} String getVisitorName()
+        #void processCompilationUnit(CompilationUnit cu)
+        +boolean preVisit2(ASTNode node)
+        +void postVisit(ASTNode node)
+    }
+    
+    class VisitorResult {
+        -String visitorName
+        -Map<String, Object> data
+        -boolean successful
+        +void addData(String key, Object value)
+        +Object getData(String key)
+    }
+}
+
+package "visitors.structural" {
+    class ClassStructureVisitor {
+        -List<ClassInfo> classes
+        -ClassInfo currentClass
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(TypeDeclaration node)
+        +boolean visit(MethodDeclaration node)
+        +boolean visit(FieldDeclaration node)
+        +void endVisit(TypeDeclaration node)
+    }
+    
+    class PackageStructureVisitor {
+        -Map<String, PackageInfo> packages
+        -String currentPackage
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(PackageDeclaration node)
+        +boolean visit(TypeDeclaration node)
+    }
+    
+    class InheritanceVisitor {
+        -Map<String, List<String>> inheritanceMap
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(TypeDeclaration node)
+        -void extractSuperClasses(TypeDeclaration node)
+    }
+}
+
+package "visitors.metrics" {
+    class LinesOfCodeVisitor {
+        -int totalLines
+        -Map<String, Integer> classLines
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(TypeDeclaration node)
+        +boolean visit(MethodDeclaration node)
+        -int calculateLines(ASTNode node)
+    }
+}
+
+package "model.project" {
+    class JavaProject {
+        -String name
+        -String rootPath
+        -List<PackageInfo> packages
+        -List<ClassInfo> classes
+        +void addClass(ClassInfo classInfo)
+        +void addPackage(PackageInfo packageInfo)
+        +ClassInfo findClass(String qualifiedName)
+    }
+    
+    class PackageInfo {
+        -String name
+        -List<ClassInfo> classes
+        +void addClass(ClassInfo classInfo)
+        +int getClassCount()
+    }
+}
+
+package "model.structural" {
+    class ClassInfo {
+        -String name
+        -String packageName
+        -String qualifiedName
+        -List<MethodInfo> methods
+        -List<FieldInfo> fields
+        -List<String> superClasses
+        -ClassMetrics metrics
+        +void addMethod(MethodInfo method)
+        +void addField(FieldInfo field)
+        +int getMethodCount()
+        +int getFieldCount()
+    }
+    
+    class MethodInfo {
+        -String name
+        -String className
+        -String signature
+        -List<String> parameters
+        -String visibility
+        -int linesOfCode
+        -int parameterCount
+        +String getFullSignature()
+        +boolean isPublic()
+    }
+    
+    class FieldInfo {
+        -String name
+        -String type
+        -String visibility
+        -String className
+        +boolean isPublic()
+        +boolean isPrivate()
+        +boolean isProtected()
+    }
+    
+    class MethodCall {
+        -MethodInfo caller
+        -MethodInfo callee
+        -String receiverType
+        -int lineNumber
+        +String getCallSignature()
+    }
+}
+
+package "model.metrics" {
+    class ClassMetrics {
+        -int methodCount
+        -int fieldCount
+        -int linesOfCode
+        -double complexity
+        +void calculateBasicMetrics()
+    }
+    
+    class ProjectMetrics {
+        -int totalClasses
+        -int totalMethods
+        -int totalLOC
+        -double avgMethodsPerClass
+        -double avgLOCPerMethod
+        +void calculateFromProject(JavaProject project)
+    }
+}
+
+package "extractors" {
+    interface MetricExtractor {
+        +String getMetricName()
+        +Object extract(AnalysisResult result)
+        +boolean isApplicable(AnalysisResult result)
+        +MetricType getMetricType()
+    }
+    
+    abstract class AbstractMetricExtractor {
+        #String metricName
+        #MetricType type
+        +String getMetricName()
+        +MetricType getMetricType()
+        +boolean isApplicable(AnalysisResult result)
+        +{abstract} Object extract(AnalysisResult result)
+        #List<ClassInfo> getClasses(AnalysisResult result)
+        #List<MethodInfo> getMethods(AnalysisResult result)
+    }
+    
+    class MetricExtractorFactory {
+        +List<MetricExtractor> createAllExtractors()
+        +MetricExtractor createExtractor(MetricType type)
+        +List<MetricExtractor> createBasicExtractors()
+        +List<MetricExtractor> createRankingExtractors()
+    }
+}
+
+package "extractors.basic" {
+    class ClassCountExtractor {
+        +Object extract(AnalysisResult result)
+    }
+    
+    class MethodCountExtractor {
+        +Object extract(AnalysisResult result)
+    }
+    
+    class LinesOfCodeExtractor {
+        +Object extract(AnalysisResult result)
+    }
+    
+    class PackageCountExtractor {
+        +Object extract(AnalysisResult result)
+    }
+}
+
+package "extractors.averages" {
+    class AverageMethodsPerClassExtractor {
+        +Object extract(AnalysisResult result)
+        -double calculateAverage(List<ClassInfo> classes)
+    }
+    
+    class AverageLOCPerMethodExtractor {
+        +Object extract(AnalysisResult result)
+    }
+}
+
+package "extractors.ranking" {
+    class TopMethodCountClassesExtractor {
+        -double percentage
+        +Object extract(AnalysisResult result)
+        -List<ClassInfo> getTopClasses(List<ClassInfo> classes)
+        +void setPercentage(double percentage)
+    }
+    
+    class TopFieldCountClassesExtractor {
+        -double percentage
+        +Object extract(AnalysisResult result)
+    }
+    
+    class IntersectionExtractor {
+        -TopMethodCountClassesExtractor methodExtractor
+        -TopFieldCountClassesExtractor fieldExtractor
+        +Object extract(AnalysisResult result)
+        -List<ClassInfo> findIntersection(List<ClassInfo> list1, List<ClassInfo> list2)
+    }
+}
+
+package "extractors.advanced" {
+    class ThresholdMethodCountExtractor {
+        -int threshold
+        +Object extract(AnalysisResult result)
+        +void setThreshold(int threshold)
+        -List<ClassInfo> filterByThreshold(List<ClassInfo> classes)
+    }
+    
+    class MaxParametersExtractor {
+        +Object extract(AnalysisResult result)
+        -int findMaxParameters(List<MethodInfo> methods)
+    }
+}
+
+package "statistics" {
+    class StatisticsCalculator {
+        +ProjectMetrics calculateProjectMetrics(JavaProject project)
+        +List<ClassInfo> calculateTopClasses(List<ClassInfo> classes, double percentage)
+        +double calculateAverage(List<Integer> values)
+        +List<ClassInfo> findIntersection(List<ClassInfo> list1, List<ClassInfo> list2)
+    }
+    
+    class RankingCalculator {
+        +List<ClassInfo> getTopByMethodCount(List<ClassInfo> classes, double percentage)
+        +List<ClassInfo> getTopByFieldCount(List<ClassInfo> classes, double percentage)
+        +List<MethodInfo> getTopByLOC(List<MethodInfo> methods, double percentage)
+        -List<T> getTopPercent(List<T> items, double percentage, Comparator<T> comparator)
+    }
+}
+
+package "callgraph" {
+    class CallGraphBuilder {
+        -CallGraphVisitor visitor
+        -MethodCallResolver resolver
+        +CallGraph buildCallGraph(JavaProject project)
+        +List<MethodCall> extractMethodCalls(JavaProject project)
+    }
+    
+    class CallGraphVisitor {
+        -List<MethodCall> methodCalls
+        -MethodInfo currentMethod
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(MethodDeclaration node)
+        +boolean visit(MethodInvocation node)
+        -MethodCall createMethodCall(MethodInvocation invocation)
+    }
+    
+    class MethodCallResolver {
+        +MethodInfo resolveMethodCall(MethodInvocation invocation, JavaProject project)
+        +String resolveReceiverType(Expression receiver)
+        -MethodInfo findMethodInClass(String className, String methodName)
+    }
+    
+    class CallGraph {
+        -Map<MethodInfo, List<MethodCall>> adjacencyList
+        +void addCall(MethodCall call)
+        +List<MethodCall> getCallsFrom(MethodInfo method)
+        +List<MethodCall> getCallsTo(MethodInfo method)
+        +Set<MethodInfo> getAllMethods()
+    }
+}
+
+' ============ ENUMS ============
+enum MetricType {
+    BASIC
+    AVERAGE
+    RANKING
+    THRESHOLD
+    STATISTICAL
+}
+
+' ============ RELATIONSHIPS ============
+
+' Core relationships
+Main --> ASTProcessor : uses
+ASTProcessor --> ProjectExplorer : uses
+ASTProcessor --> ASTParserFacade : uses
+ASTProcessor *-- BaseASTVisitor : manages
+ASTProcessor *-- MetricExtractor : manages
+ASTProcessor --> StatisticsCalculator : uses
+ASTProcessor --> AnalysisResult : creates
+
+' Parser relationships
+ASTParserFacade --> ParseConfiguration : uses
+ASTParserFacade --> JavaFileParser : uses
+
+' Visitor inheritance
+BaseASTVisitor <|-- ClassStructureVisitor
+BaseASTVisitor <|-- PackageStructureVisitor
+BaseASTVisitor <|-- InheritanceVisitor
+BaseASTVisitor <|-- LinesOfCodeVisitor
+BaseASTVisitor <|-- CallGraphVisitor
+
+BaseASTVisitor --> VisitorResult : creates
+
+' Model relationships
+JavaProject *-- PackageInfo : contains
+JavaProject *-- ClassInfo : contains
+PackageInfo *-- ClassInfo : contains
+ClassInfo *-- MethodInfo : contains
+ClassInfo *-- FieldInfo : contains
+ClassInfo --> ClassMetrics : has
+
+MethodCall --> MethodInfo : references
+
+' Extractor relationships
+MetricExtractor <|.. AbstractMetricExtractor
+AbstractMetricExtractor <|-- ClassCountExtractor
+AbstractMetricExtractor <|-- MethodCountExtractor
+AbstractMetricExtractor <|-- LinesOfCodeExtractor
+AbstractMetricExtractor <|-- PackageCountExtractor
+AbstractMetricExtractor <|-- AverageMethodsPerClassExtractor
+AbstractMetricExtractor <|-- AverageLOCPerMethodExtractor
+AbstractMetricExtractor <|-- TopMethodCountClassesExtractor
+AbstractMetricExtractor <|-- TopFieldCountClassesExtractor
+AbstractMetricExtractor <|-- IntersectionExtractor
+AbstractMetricExtractor <|-- ThresholdMethodCountExtractor
+AbstractMetricExtractor <|-- MaxParametersExtractor
+
+MetricExtractorFactory --> MetricExtractor : creates
+MetricExtractor --> MetricType : uses
+
+' Statistics relationships
+StatisticsCalculator --> RankingCalculator : uses
+
+' Call graph relationships
+CallGraphBuilder --> CallGraphVisitor : uses
+CallGraphBuilder --> MethodCallResolver : uses
+CallGraphBuilder --> CallGraph : creates
+CallGraph *-- MethodCall : manages
+
+' Analysis result relationships
+AnalysisResult --> JavaProject : contains
+AnalysisResult --> ProjectMetrics : contains
+
+@enduml
