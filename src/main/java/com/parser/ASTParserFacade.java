@@ -21,17 +21,17 @@ public class ASTParserFacade {
 		this.parser = createParser();
 	}
 	
-	public CompilationUnit parseSource(String javaString, String source) {
+	public CompilationUnit parseString(String javaString, String unitName) {
 		if (javaString == null || javaString.isBlank()) throw new IllegalArgumentException("Java code cannot be empty or null");
 		this.parser.setSource(javaString.toCharArray());
-		this.parser.setUnitName(source!=null ? source : this.config.getUnitName());
+		this.parser.setUnitName(unitName!=null ? unitName : this.config.getDefaultUnitName());
 		
 		CompilationUnit compilationUnit = (CompilationUnit) this.parser.createAST(null);
 		return compilationUnit;
 	}
 	
-	public CompilationUnit parseSource(String javaString) {
-		return parseSource(javaString, null);
+	public CompilationUnit parseString(String javaString) {
+		return parseString(javaString, null);
 	}
 	
 	public CompilationUnit parseFile(File javaFile) {
@@ -39,7 +39,7 @@ public class ASTParserFacade {
 		if (!javaFile.getName().endsWith(".java")) throw new IllegalArgumentException(javaFile+" is not a Java file");
 		try {
 			String content = Files.readString(javaFile.toPath());
-			return parseSource(content, javaFile.getName());
+			return parseString(content, javaFile.getName());
 		} catch (IOException e) {
 			throw new RuntimeException("Error reading file "+javaFile.getName(), e);
 		}

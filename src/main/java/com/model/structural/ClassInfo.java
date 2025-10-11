@@ -39,11 +39,11 @@ public class ClassInfo extends NodeInfo {
 	
 	public List<String> copyInterfaces() {return new ArrayList<>(this.interfaces);}
 
-	public void addInterface(String interfaceObj) {
-		if (interfaceObj!=null &&
-			!interfaceObj.isBlank() &&
-			!this.interfaces.contains(interfaceObj))
-			this.interfaces.add(interfaceObj);
+	public void addInterface(String interfaceName) {
+		if (interfaceName!=null &&
+			!interfaceName.isBlank() &&
+			!this.interfaces.contains(interfaceName))
+			this.interfaces.add(interfaceName);
 	}
 
 	protected List<MethodInfo> getMethods() {return Collections.unmodifiableList(this.methods);}

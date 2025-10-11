@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.AST;
 
@@ -26,7 +28,7 @@ import org.eclipse.jdt.core.dom.AST;
  * <p><strong>Usage Example:</strong></p>
  * <pre>{@code
  * ParseConfiguration config = ParseConfiguration.defaultConfig()
- *     .withUnitName("MyClass.java")
+ *     .withDefaultUnitName("MyClass.java")
  *     .withSourcePaths(new String[]{"src/main/java"});
  * }</pre>
  * 
@@ -108,7 +110,7 @@ public class ParseConfiguration {
      * <p><strong>Purpose:</strong> Enables runtime validation of supported JLS versions</p>
      * <p><strong>Future Enhancement:</strong> Could be exposed via getter for external validation</p>
      */
-    private static HashMap<String,Integer> JAVA_JLS_LIST = setSupportedJLS();
+    private static Map<String,Integer> JAVA_JLS_LIST = setSupportedJLS();
 
     /**
      * Static initialization block for runtime JLS version detection and fallback configuration.
@@ -207,13 +209,13 @@ public class ParseConfiguration {
 
     /**
      * The name of the compilation unit being parsed.
-     * <p><strong>Naming:</strong> unitName indicates this is a compilation unit identifier</p>
+     * <p><strong>Naming:</strong> defaultUnitName indicates this is a compilation unit identifier</p>
      * <p><strong>Type:</strong> String - Standard file naming</p>
      * <p><strong>Default:</strong> "UnnamedFile.java" - Provides meaningful fallback</p>
      * <p><strong>Purpose:</strong> Used in error messages and binding resolution context</p>
      * <p><strong>Requirement:</strong> Should match actual .java file name for accurate error reporting</p>
      */
-    private String unitName = fixJavaFileNamingWithDefault(null);
+    private String defaultUnitName = fixJavaFileNamingWithDefault(null);
 
 /* 
     +-----------------------------------------------------------------------------------------+    
@@ -320,13 +322,13 @@ public class ParseConfiguration {
      * 
      * @param defaultUnitName Base name for the compilation unit (without .java extension)
      * @return A new configuration instance configured for testing
-     * @see #withUnitName(String)
+     * @see #withDefaultUnitName(String)
      */
 	public static ParseConfiguration testConfig(String defaultUnitName) {
 		return new ParseConfiguration()
 				.withSpecificJREVersion(JAVA_LATEST)
 				.withBindings(true)
-				.withUnitName(defaultUnitName);
+				.withDefaultUnitName(defaultUnitName);
 	}
 
     /**
@@ -472,7 +474,7 @@ public class ParseConfiguration {
      * @param classPaths Array of classpath entries (null-safe)
      * @see #withClassPaths(String[])
      */
-	private void setClassPaths(String[] classPaths) {
+	private void setClassPaths(String... classPaths) {
 		this.classPaths = classPaths!=null ? classPaths.clone() : new String[0];
 	}
 
@@ -498,33 +500,33 @@ public class ParseConfiguration {
      * @param sourcePaths Array of source path entries (null-safe)
      * @see #withSourcePaths(String[])
      */
-	private void setSourcePaths(String[] sourcePaths) {
+	private void setSourcePaths(String... sourcePaths) {
 		this.sourcePaths = sourcePaths!=null ? sourcePaths.clone() : new String[0];
 	}
 
     /**
      * Retrieves the configured compilation unit name.
      * 
-     * <p><strong>Naming:</strong> getUnitName follows standard accessor convention</p>
+     * <p><strong>Naming:</strong> getDefaultUnitName follows standard accessor convention</p>
      * <p><strong>Return Type:</strong> String - Simple identifier</p>
      * <p><strong>Guarantee:</strong> Never null, defaults to "UnnamedFile.java"</p>
      * 
      * @return The compilation unit name (never null)
-     * @see #withUnitName(String)
+     * @see #withDefaultUnitName(String)
      */
-	public String getUnitName() {return unitName;}
+	public String getDefaultUnitName() {return defaultUnitName;}
 
     /**
      * Sets the compilation unit name with null-safe fallback.
      * 
-     * <p><strong>Visibility:</strong> Private to enforce fluent API usage via withUnitName()</p>
+     * <p><strong>Visibility:</strong> Private to enforce fluent API usage via withDefaultUnitName()</p>
      * <p><strong>Null Handling:</strong> Null input replaced with default name</p>
      * 
-     * @param unitName The compilation unit name (null-safe)
-     * @see #withUnitName(String)
+     * @param defaultUnitName The compilation unit name (null-safe)
+     * @see #withDefaultUnitName(String)
      */
-	private void setUnitName(String unitName) {
-		this.unitName = fixJavaFileNamingWithDefault(unitName);
+	private void setDefaultUnitName(String defaultUnitName) {
+		this.defaultUnitName = fixJavaFileNamingWithDefault(defaultUnitName);
 	}
 
 /* 
@@ -544,7 +546,7 @@ public class ParseConfiguration {
      * <pre>{@code
      * config.withSpecificJREVersion(JAVA_17)
      *       .withBindings(true)
-     *       .withUnitName("Test.java");
+     *       .withDefaultUnitName("Test.java");
      * }</pre>
      * 
      * @param value The JLS level constant to configure
@@ -582,7 +584,7 @@ public class ParseConfiguration {
      * @return This configuration instance for method chaining
      * @see #getClassPaths()
      */
-	public ParseConfiguration withClassPaths(String[] value) {
+	public ParseConfiguration withClassPaths(String... value) {
 		setClassPaths(value);
 		return this;
 	}
@@ -598,7 +600,7 @@ public class ParseConfiguration {
      * @return This configuration instance for method chaining
      * @see #getSourcePaths()
      */
-	public ParseConfiguration withSourcePaths(String[] value) {
+	public ParseConfiguration withSourcePaths(String... value) {
 		setSourcePaths(value);
 		return this;
 	}
@@ -606,23 +608,23 @@ public class ParseConfiguration {
     /**
      * Fluent setter for compilation unit name configuration.
      * 
-     * <p><strong>Naming:</strong> withUnitName follows fluent API convention</p>
+     * <p><strong>Naming:</strong> withDefaultUnitName follows fluent API convention</p>
      * <p><strong>Return Type:</strong> this - Enables method chaining</p>
      * <p><strong>Safety:</strong> Null values replaced with default name</p>
      * 
      * @param value The compilation unit name (null-safe)
      * @return This configuration instance for method chaining
-     * @see #getUnitName()
+     * @see #getDefaultUnitName()
      */
-	public ParseConfiguration withUnitName(String value) {
-		setUnitName(value);
+	public ParseConfiguration withDefaultUnitName(String value) {
+		setDefaultUnitName(value);
 		return this;
 	}
 	
 	// AST.getAllSupportedVersions();
-	private static HashMap<String,Integer> setSupportedJLS() {
-		ArrayList<Integer> allJLS = new ArrayList<>(Arrays.asList(8,11,17,21,AST.getJLSLatest()));
-		HashMap<String,Integer> allJLSMap = new HashMap<>();
+	private static Map<String,Integer> setSupportedJLS() {
+		List<Integer> allJLS = new ArrayList<>(Arrays.asList(8,11,17,21,AST.getJLSLatest()));
+		Map<String,Integer> allJLSMap = new HashMap<>();
 		int oldVersion = 0;
 		for (int v : allJLS) {
 			String k = "JLS"+v;
@@ -784,7 +786,7 @@ public class ParseConfiguration {
 			ParseConfiguration.class.getSimpleName()+":"+
 			"\n  → JRE's version     = "+getJLStoString(this.currentJLS)+
 			"\n  → Resolve Bindings  = "+this.resolveBindings+
-			"\n  → Default Unit name = "+this.unitName+
+			"\n  → Default Unit name = "+this.defaultUnitName+
 			"\n  → Class Paths       = "+this.classPaths+
 			"\n  → Source Paths      = "+this.sourcePaths
 		;

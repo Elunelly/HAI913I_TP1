@@ -1,0 +1,285 @@
+@startuml UML_com_model
+
+!theme reddress-darkred
+'skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "model.metrics" {
+    class ClassMetrics {
+        -int methodCount
+        -int fieldCount
+        -int linesOfCode
+        -double complexity
+        +void calculateBasicMetrics()
+    }
+    
+    class ProjectMetrics {
+        -int totalClasses
+        -int totalMethods
+        -int totalLOC
+        -double avgMethodsPerClass
+        -double avgLOCPerMethod
+        +void calculateFromProject(JavaProject project)
+    }
+
+    class StatisticalData {}
+}
+
+package "model.project" {
+    class PackageInfo {
+        - String name {readOnly}
+        - PackageInfo parentPackage
+        - Map<String,PackageInfo> subPackages {readOnly}
+        - List<ClassInfo> classes {readOnly}
+
+        + PackageInfo(String name)
+
+        + String getName()
+        + String getLastName()
+        + PackageInfo getParentPackage()
+        + void setParentPackage(PackageInfo parentPackage)
+        + List<PackageInfo> getSubPackages()
+        + PackageInfo getSubPackage(String name)
+        + void addSubPackage(PackageInfo subPackage)
+        + boolean hasSubPackages()
+        + List<ClassInfo> getClasses()
+        + List<ClassInfo> copyClasses()
+        + ClassInfo getClass(String name)
+        + void addClass(ClassInfo classInfo)
+        + boolean hasClasses()
+        + boolean hasClass(String name)
+        + boolean isRoot()
+        + boolean hasName()
+        + int getDepth()
+        + List<String> splitPackageName()
+        + List<PackageInfo> getAllAncestors()
+        + List<PackageInfo> getAllDescendants()
+        + List<ClassInfo> getAllClassesRecursive()
+        + boolean equals(PackageInfo that)
+        + String toString()
+    }
+
+    class JavaProject {
+        - String name {readOnly}
+        - Path rootPath {readOnly}
+        - Map<String,PackageInfo> packages {readOnly}
+        - List<ClassInfo> classes {readOnly}
+        - Map<String,ClassInfo> classIndex {readOnly}
+        - List<CompilationUnit> compilationUnits {readOnly}
+
+        + JavaProject(String name, Path path)
+        + JavaProject(String name)
+
+        + String getName()
+        + Path getRootPath()
+        + Map<String,PackageInfo> getMappedPackages()
+        + Map<String,PackageInfo> copyMappedPackages()
+        + List<PackageInfo> getPackages()
+        + PackageInfo getPackage(String name)
+        + List<String> getPackageNames()
+        + void addPackage(PackageInfo packageInfo)
+        + boolean hasPackages()
+        + boolean hasPackage(String name)
+        + void buildPackagesHierarchy()
+        + List<ClassInfo> getClasses()
+        + List<ClassInfo> copyClasses()
+        + void addClass(ClassInfo classInfo)
+        + void addAllClasses(ClassInfo... classInfos)
+        + String getClass(String name)
+        + List<ClassInfo> getClassesByPackage(String name)
+        + List<CompilationUnit> getCompilationUnits()
+        + List<CompilationUnit> copyCompilationUnits()
+        + void addCompilationUnit(CompilationUnit compilationUnit)
+        + void addAllCompilationUnits(CompilationUnit... compilationUnits)
+        + void buildPackageHierarchy()
+        + boolean hasClasses()
+        + void clear()
+        + String toString()
+    }
+}
+
+package "model.structural" {
+    abstract class NodeInfo {
+        - String name
+        - NodeVisibility visibility
+        - boolean isStatic
+        - boolean isAbstract
+        - boolean isFinal
+        - boolean isPublic
+        - List<NodeModifiers> modifiers
+
+        + NodeInfo()
+
+        + String getName()
+        + void setName(String name)
+        + NodeVisibility getVisibility()
+        + void setVisibility(NodeVisibility visibility)
+        + boolean isStatic()
+        + void setIsStatic(boolean isStatic)
+        + boolean isAbstract()
+        + void setIsAbstract(boolean isAbstract)
+        + boolean isFinal()
+        + void setIsFinal(boolean isFinal)
+        + boolean isPublic()
+        + void setIsPublic(boolean isPublic)
+        + List<NodeModifiers> getModifiers()
+        + void addAllModifiers(int modifiersFlag)
+        + void setDefinedModifiers(int modifiersFlag)
+        + boolean isModifiersEmpty()
+        + boolean hasModifier(NodeModifiers modifier)
+        # String modifiersToString(String sep)
+        # String modifiersToString()
+        + String getFullSignature()
+        + String getSignature()
+    }
+
+    class ClassInfo {
+        # String packageName
+        # boolean isInterface
+        # String superClass
+        # List<String> interfaces {readOnly}
+        # List<MethodInfo> methods {readOnly}
+        # List<FieldInfo> fields {readOnly}
+
+        + ClassInfo()
+
+        + String getPackageName()
+        + void setPackageName(String packageName)
+        + boolean isInterface()
+        + void setIsInterface(boolean isInterface)
+        + String getSuperClass()
+        + void setSuperClass(String superClass)
+        # List<String> getInterfaces()
+        + List<String> copyInterfaces()
+        + void addInterface(String interfaceName)
+        # List<MethodInfo> getMethods()
+        + List<MethodInfo> copyMethods()
+        + void addMethod(MethodInfo method)
+        # List<FieldInfo> getFields()
+        + List<FieldInfo> copyFields()
+        + void addField(FieldInfo field)
+        + String getQualifiedName()
+        + boolean hasInheritance()
+        + boolean hasImplementations()
+        + List<MethodInfo> getMethodsByVisibility(NodeVisibility visibility)
+        + List<MethodInfo> getPublicMethods()
+        + List<MethodInfo> getProtectedMethods()
+        + List<MethodInfo> getPrivateMethods()
+        + List<MethodInfo> getPackageMethods()
+        + String getSignature()
+        + String getShortSignature()
+        + String getOverviewSignature()
+        + String toString()
+    }
+
+    class MethodInfo {
+        # String returnType
+        # boolean isConstructor
+        # List<String> parameters {readOnly}
+
+        + MethodInfo()
+
+        + String getReturnType()
+        + void setReturnType(String returnType)
+        + boolean isConstructor()
+        + void setIsConstructor(boolean isConstructor)
+        + List<String> getParameters()
+        + List<String> copyParameters()
+        + void addParameter(String parameter)
+        + String getSignature()
+        + String toString()
+    }
+
+    class FieldInfo {
+        # String type
+
+        + FieldInfo()
+
+        + String getType()
+        + void setType(String type)
+        + boolean isConstant()
+        + String getSignature()
+        + String toString()
+    }
+    
+    class MethodCall {
+        -MethodInfo caller
+        -MethodInfo callee
+        -String receiverType
+        -int lineNumber
+        +String getCallSignature()
+    }
+
+    enum NodeModifiers {
+        STATIC
+        FINAL
+        SYNCHRONIZED
+        VOLATILE
+        TRANSIENT
+        NATIVE
+        SEALED
+        ABSTRACT
+        STRICTFP
+        NON_SEALED
+        MODULE
+        DEFAULT
+
+        - String name {readOnly}
+        - int bit {readOnly}
+
+        - NodeModifiers(String name, int bit)
+        + int getBit()
+        + boolean isPresentIn(int modifiersFlag)
+        + {static} List<NodeModifiers> getAllFrom(int modifiersFlag)
+        + String toString()
+    }
+
+    enum NodeVisibility {
+        PUBLIC
+        PRIVATE
+        PROTECTED
+        PACKAGE
+
+        - String name {readOnly}
+        - int bit {readOnly}
+
+        - NodeVisibility(String name, int bit)
+        + int getBit()
+        + {static} NodeVisibility getFrom(int modifiersFlag)
+        + boolean isMoreAccessibleThan(NodeVisibility visibility)
+        - int getAccessLevel()
+        + String toString()
+    }
+}
+
+' ============ RELATIONSHIPS ============
+NodeInfo <|-- ClassInfo
+NodeInfo <|-- MethodInfo
+NodeInfo <|-- FieldInfo
+
+NodeInfo --> "1" NodeVisibility : has
+NodeInfo --> "*" NodeModifiers : has
+
+ClassInfo "1" *-- "*" MethodInfo : contains
+ClassInfo "1" *-- "*" FieldInfo : contains
+ClassInfo --> ClassMetrics : has
+
+MethodCall --> MethodInfo : references
+
+PackageInfo "1" o-- "0..1" PackageInfo : has ParentPackage
+PackageInfo "1" *-- "*" PackageInfo : contains SubPackage
+PackageInfo "1" *-- "*" ClassInfo : contains
+
+JavaProject "1" *-- "*" PackageInfo : contains
+JavaProject "1" *-- "*" ClassInfo : contains
+
+' ============ NOTES ============
+note "TODO:\nWill be implemented later on" as TODO_MODEL
+
+TODO_MODEL .. MethodCall
+TODO_MODEL .. ClassMetrics
+TODO_MODEL .. ProjectMetrics
+TODO_MODEL .. StatisticalData
+
+@enduml

@@ -1,0 +1,20 @@
+@startuml UML_com_
+
+!theme reddress-darkred
+'skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "example" {
+    class ExampleClass {
+    }
+}
+
+' ============ RELATIONSHIPS ============
+
+' ============ NOTES ============
+!ifdef LOCAL_VIEW
+note "TODO: Will be implemented later on" as TODO
+!endif
+
+@enduml

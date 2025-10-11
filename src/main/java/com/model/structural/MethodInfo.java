@@ -22,11 +22,13 @@ public class MethodInfo extends NodeInfo {
 
 	public boolean isConstructor() {return this.isConstructor;}
 
-	public void setConstructor(boolean isConstructor) {
+	public void setIsConstructor(boolean isConstructor) {
 		this.isConstructor = isConstructor;
 	}
 
 	public List<String> getParameters() {return Collections.unmodifiableList(this.parameters);}
+	
+	public List<String> copyParameters() {return new ArrayList<>(this.parameters);}
 
 	public void addParameter(String parameter) {
 		if (parameter!=null &&

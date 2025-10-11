@@ -4,8 +4,6 @@ import org.eclipse.jdt.core.dom.AST;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.DisplayName;
 
-import com.parser.ParseConfiguration;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -66,9 +64,9 @@ class ParseConfigurationTest {
 
         @Test
         @DisplayName("Constructor should initialize with default unit name")
-        void constructorShouldSetDefaultUnitName() {
+        void constructorShouldSetDefaultDefaultUnitName() {
             // Assert
-            assertEquals("DefaultClass.java", config.getUnitName(),
+            assertEquals("DefaultClass.java", config.getDefaultUnitName(),
                 "Default unit name should be 'DefaultClass.java'");
         }
 
@@ -173,7 +171,7 @@ class ParseConfigurationTest {
             ParseConfiguration result = ParseConfiguration.testConfig(baseName);
 
             // Assert
-            assertEquals("MyTest.java", result.getUnitName(),
+            assertEquals("MyTest.java", result.getDefaultUnitName(),
                 "Test configuration should append .java extension");
         }
 
@@ -187,9 +185,9 @@ class ParseConfigurationTest {
             ParseConfiguration result = ParseConfiguration.testConfig(nameWithExtension);
 
             // Assert
-            assertEquals("MyTest.java", result.getUnitName(),
+            assertEquals("MyTest.java", result.getDefaultUnitName(),
                 "Test configuration should not duplicate .java extension");
-            assertFalse(result.getUnitName().endsWith(".java.java"),
+            assertFalse(result.getDefaultUnitName().endsWith(".java.java"),
                 "Unit name should not end with '.java.java'");
         }
 
@@ -203,9 +201,9 @@ class ParseConfigurationTest {
             ParseConfiguration result = ParseConfiguration.testConfig(invalidName);
 
             // Assert
-            assertEquals("MyTestFile.java", result.getUnitName(),
+            assertEquals("MyTestFile.java", result.getDefaultUnitName(),
                 "Test configuration should remove invalid characters");
-            assertTrue(result.getUnitName().matches("^[a-zA-Z_$][\\w$]*\\.java$"),
+            assertTrue(result.getDefaultUnitName().matches("^[a-zA-Z_$][\\w$]*\\.java$"),
                 "Unit name should be a valid Java filename");
         }
 
@@ -216,7 +214,7 @@ class ParseConfigurationTest {
             ParseConfiguration result = ParseConfiguration.testConfig("");
 
             // Assert
-            assertEquals("DefaultClass.java", result.getUnitName(),
+            assertEquals("DefaultClass.java", result.getDefaultUnitName(),
                 "Test configuration should use default name for empty string");
         }
 
@@ -227,7 +225,7 @@ class ParseConfigurationTest {
             ParseConfiguration result = ParseConfiguration.testConfig(null);
 
             // Assert
-            assertEquals("DefaultClass.java", result.getUnitName(),
+            assertEquals("DefaultClass.java", result.getDefaultUnitName(),
                 "Test configuration should use default name for null");
         }
 
@@ -354,10 +352,10 @@ class ParseConfigurationTest {
         }
 
         @Test
-        @DisplayName("withUnitName() should return same instance")
-        void withUnitNameShouldReturnSameInstance() {
+        @DisplayName("withDefaultUnitName() should return same instance")
+        void withDefaultUnitNameShouldReturnSameInstance() {
             // Act
-            ParseConfiguration result = config.withUnitName("Test.java");
+            ParseConfiguration result = config.withDefaultUnitName("Test.java");
 
             // Assert
             assertSame(config, result,
@@ -377,7 +375,7 @@ class ParseConfigurationTest {
                 .withBindings(true)
                 .withClassPaths(classPaths)
                 .withSourcePaths(sourcePaths)
-                .withUnitName("CompleteTest.java");
+                .withDefaultUnitName("CompleteTest.java");
 
             // Assert
             assertAll("All chained configurations should be applied",
@@ -386,7 +384,7 @@ class ParseConfigurationTest {
                 () -> assertTrue(result.isResolveBindings()),
                 () -> assertArrayEquals(classPaths, result.getClassPaths()),
                 () -> assertArrayEquals(sourcePaths, result.getSourcePaths()),
-                () -> assertEquals("CompleteTest.java", result.getUnitName())
+                () -> assertEquals("CompleteTest.java", result.getDefaultUnitName())
             );
         }
     }
@@ -460,18 +458,18 @@ class ParseConfigurationTest {
         }
 
         @Test
-        @DisplayName("getUnitName() should return configured name")
-        void getUnitNameShouldReturnConfiguredName() {
+        @DisplayName("getDefaultUnitName() should return configured name")
+        void getDefaultUnitNameShouldReturnConfiguredName() {
             // Arrange
             String name = "MyClass.java";
-            config.withUnitName(name);
+            config.withDefaultUnitName(name);
 
             // Act
-            String result = config.getUnitName();
+            String result = config.getDefaultUnitName();
 
             // Assert
             assertEquals(name, result,
-                "getUnitName should return the configured name");
+                "getDefaultUnitName should return the configured name");
         }
     }
 
@@ -488,7 +486,7 @@ class ParseConfigurationTest {
         @DisplayName("withClassPaths(null) should set empty array")
         void withClassPathsNullShouldSetEmptyArray() {
             // Act
-            config.withClassPaths(null);
+            config.withClassPaths();
 
             // Assert
             assertNotNull(config.getClassPaths(),
@@ -501,7 +499,7 @@ class ParseConfigurationTest {
         @DisplayName("withSourcePaths(null) should set empty array")
         void withSourcePathsNullShouldSetEmptyArray() {
             // Act
-            config.withSourcePaths(null);
+            config.withSourcePaths();
 
             // Assert
             assertNotNull(config.getSourcePaths(),
@@ -511,13 +509,13 @@ class ParseConfigurationTest {
         }
 
         @Test
-        @DisplayName("withUnitName(null) should set default name")
-        void withUnitNameNullShouldSetDefaultName() {
+        @DisplayName("withDefaultUnitName(null) should set default name")
+        void withDefaultUnitNameNullShouldSetDefaultName() {
             // Act
-            config.withUnitName(null);
+            config.withDefaultUnitName(null);
 
             // Assert
-            assertEquals("DefaultClass.java", config.getUnitName(),
+            assertEquals("DefaultClass.java", config.getDefaultUnitName(),
                 "Unit name should revert to default when set to null");
         }
 
@@ -528,9 +526,9 @@ class ParseConfigurationTest {
             ParseConfiguration result = ParseConfiguration.testConfig(null);
 
             // Assert
-            assertNotNull(result.getUnitName(),
+            assertNotNull(result.getDefaultUnitName(),
                 "Unit name should not be null even with null input");
-            assertTrue(result.getUnitName().endsWith(".java"),
+            assertTrue(result.getDefaultUnitName().endsWith(".java"),
                 "Unit name should still end with .java extension");
         }
     }
@@ -738,85 +736,85 @@ class ParseConfigurationTest {
     class EdgeCasesTests {
 
         @Test
-        @DisplayName("withUnitName() with empty string should use default name")
-        void withUnitNameEmptyStringShouldUseDefault() {
+        @DisplayName("withDefaultUnitName() with empty string should use default name")
+        void withDefaultUnitNameEmptyStringShouldUseDefault() {
             // Act
-            config.withUnitName("");
+            config.withDefaultUnitName("");
 
             // Assert
-            assertEquals("DefaultClass.java", config.getUnitName(),
+            assertEquals("DefaultClass.java", config.getDefaultUnitName(),
                 "Empty unit name should be replaced with default");
         }
 
         @Test
-        @DisplayName("withUnitName() with whitespace-only string should use default name")
-        void withUnitNameWhitespaceOnlyShouldUseDefault() {
+        @DisplayName("withDefaultUnitName() with whitespace-only string should use default name")
+        void withDefaultUnitNameWhitespaceOnlyShouldUseDefault() {
             // Arrange
             String whitespace = "   ";
 
             // Act
-            config.withUnitName(whitespace);
+            config.withDefaultUnitName(whitespace);
 
             // Assert
-            assertEquals("DefaultClass.java", config.getUnitName(),
+            assertEquals("DefaultClass.java", config.getDefaultUnitName(),
                 "Whitespace-only unit name should be replaced with default");
         }
 
         @Test
-        @DisplayName("withUnitName() with invalid characters should sanitize them")
-        void withUnitNameInvalidCharactersShouldBeSanitized() {
+        @DisplayName("withDefaultUnitName() with invalid characters should sanitize them")
+        void withDefaultUnitNameInvalidCharactersShouldBeSanitized() {
             // Arrange
             String invalidName = "My*Class?Name<>.java";
 
             // Act
-            config.withUnitName(invalidName);
+            config.withDefaultUnitName(invalidName);
 
             // Assert
-            assertEquals("MyClassName.java", config.getUnitName(),
+            assertEquals("MyClassName.java", config.getDefaultUnitName(),
                 "Invalid characters should be removed from unit name");
         }
 
         @Test
-        @DisplayName("withUnitName() with path separators should remove them")
-        void withUnitNamePathSeparatorsShouldBeRemoved() {
+        @DisplayName("withDefaultUnitName() with path separators should remove them")
+        void withDefaultUnitNamePathSeparatorsShouldBeRemoved() {
             // Arrange
             String nameWithPath = "com/example/MyClass.java";
 
             // Act
-            config.withUnitName(nameWithPath);
+            config.withDefaultUnitName(nameWithPath);
 
             // Assert
-            assertEquals("comexampleMyClass.java", config.getUnitName(),
+            assertEquals("comexampleMyClass.java", config.getDefaultUnitName(),
                 "Path separators should be removed from unit name");
         }
 
         @Test
-        @DisplayName("withUnitName() starting with number should prepend underscore")
-        void withUnitNameStartingWithNumberShouldPrependUnderscore() {
+        @DisplayName("withDefaultUnitName() starting with number should prepend underscore")
+        void withDefaultUnitNameStartingWithNumberShouldPrependUnderscore() {
             // Arrange
             String nameStartingWithNumber = "123Class";
 
             // Act
-            config.withUnitName(nameStartingWithNumber);
+            config.withDefaultUnitName(nameStartingWithNumber);
 
             // Assert
-            assertEquals("_123Class.java", config.getUnitName(),
+            assertEquals("_123Class.java", config.getDefaultUnitName(),
                 "Names starting with number should have underscore prepended");
         }
 
         @Test
-        @DisplayName("withUnitName() with very long name should be truncated")
-        void withUnitNameVeryLongShouldBeTruncated() {
+        @DisplayName("withDefaultUnitName() with very long name should be truncated")
+        void withDefaultUnitNameVeryLongShouldBeTruncated() {
             // Arrange
             String veryLongName = "A".repeat(300);
 
             // Act
-            config.withUnitName(veryLongName);
+            config.withDefaultUnitName(veryLongName);
 
             // Assert
-            assertTrue(config.getUnitName().length() <= 255,
+            assertTrue(config.getDefaultUnitName().length() <= 255,
                 "Unit name should be truncated to 255 characters max");
-            assertTrue(config.getUnitName().endsWith(".java"),
+            assertTrue(config.getDefaultUnitName().endsWith(".java"),
                 "Truncated name should still end with .java");
         }
 
@@ -824,12 +822,12 @@ class ParseConfigurationTest {
         @DisplayName("Multiple consecutive calls should properly override values")
         void multipleConsecutiveCallsShouldOverride() {
             // Act
-            config.withUnitName("First.java")
-                  .withUnitName("Second.java")
-                  .withUnitName("Third.java");
+            config.withDefaultUnitName("First.java")
+                  .withDefaultUnitName("Second.java")
+                  .withDefaultUnitName("Third.java");
 
             // Assert
-            assertEquals("Third.java", config.getUnitName(),
+            assertEquals("Third.java", config.getDefaultUnitName(),
                 "Last value should be retained");
         }
 
@@ -890,14 +888,14 @@ class ParseConfigurationTest {
 
             // Act
             ParseConfiguration result = ParseConfiguration.defaultConfig()
-                .withUnitName("BusinessLogic.java")
+                .withDefaultUnitName("BusinessLogic.java")
                 .withClassPaths(classPaths)
                 .withSourcePaths(sourcePaths)
                 .withSpecificJREVersion(ParseConfiguration.JAVA_17);
 
             // Assert
             assertAll("Complete production configuration",
-                () -> assertEquals("BusinessLogic.java", result.getUnitName()),
+                () -> assertEquals("BusinessLogic.java", result.getDefaultUnitName()),
                 () -> assertArrayEquals(classPaths, result.getClassPaths()),
                 () -> assertArrayEquals(sourcePaths, result.getSourcePaths()),
                 () -> assertEquals(ParseConfiguration.JAVA_17, result.getCurrentJLS()),
@@ -910,13 +908,13 @@ class ParseConfigurationTest {
         void fastParsingSyntaxCheckingScenario() {
             // Act
             ParseConfiguration result = ParseConfiguration.fastConfig()
-                .withUnitName("QuickCheck.java");
+                .withDefaultUnitName("QuickCheck.java");
 
             // Assert
             assertAll("Fast parsing configuration",
                 () -> assertFalse(result.isResolveBindings(),
                     "Fast config should disable bindings"),
-                () -> assertEquals("QuickCheck.java", result.getUnitName()),
+                () -> assertEquals("QuickCheck.java", result.getDefaultUnitName()),
                 () -> assertEquals(ParseConfiguration.JAVA_LATEST, 
                     result.getCurrentJLS())
             );
@@ -929,13 +927,13 @@ class ParseConfigurationTest {
             // Act
             ParseConfiguration result = ParseConfiguration.conservativeJLSConfig()
                 .withClassPaths(new String[]{"legacy-lib/"})
-                .withUnitName("LegacyCode.java");
+                .withDefaultUnitName("LegacyCode.java");
 
             // Assert
             assertAll("Legacy codebase configuration",
                 () -> assertEquals(ParseConfiguration.JAVA_8, result.getCurrentJLS()),
                 () -> assertTrue(result.isResolveBindings()),
-                () -> assertEquals("LegacyCode.java", result.getUnitName()),
+                () -> assertEquals("LegacyCode.java", result.getDefaultUnitName()),
                 () -> assertEquals(1, result.getClassPaths().length)
             );
         }
@@ -949,7 +947,7 @@ class ParseConfigurationTest {
 
             // Assert
             assertAll("Test harness configuration",
-                () -> assertEquals("TestCase.java", result.getUnitName()),
+                () -> assertEquals("TestCase.java", result.getDefaultUnitName()),
                 () -> assertTrue(result.isResolveBindings()),
                 () -> assertEquals(1, result.getSourcePaths().length)
             );
@@ -1029,9 +1027,9 @@ class ParseConfigurationTest {
 
         @Test
         @DisplayName("toString() should include unit name")
-        void toStringShouldIncludeUnitName() {
+        void toStringShouldIncludeDefaultUnitName() {
             // Arrange
-            config.withUnitName("TestClass.java");
+            config.withDefaultUnitName("TestClass.java");
 
             // Act
             String result = config.toString();
@@ -1084,7 +1082,7 @@ class ParseConfigurationTest {
             String beforeChange = config.toString();
             
             // Act
-            config.withUnitName("ChangedName.java");
+            config.withDefaultUnitName("ChangedName.java");
             String afterChange = config.toString();
 
             // Assert
@@ -1112,27 +1110,27 @@ class ParseConfigurationTest {
                 // Basic case - no extension
                 () -> {
                     ParseConfiguration cfg = ParseConfiguration.testConfig("Simple");
-                    assertEquals("Simple.java", cfg.getUnitName());
+                    assertEquals("Simple.java", cfg.getDefaultUnitName());
                 },
                 
                 // Fixed: already has .java - should NOT duplicate
                 () -> {
                     ParseConfiguration cfg = ParseConfiguration.testConfig("HasExtension.java");
-                    assertEquals("HasExtension.java", cfg.getUnitName(),
+                    assertEquals("HasExtension.java", cfg.getDefaultUnitName(),
                         "Should not duplicate .java extension");
                 },
                 
                 // Edge case - has different extension (removed and replaced)
                 () -> {
                     ParseConfiguration cfg = ParseConfiguration.testConfig("Script.groovy");
-                    assertEquals("Scriptgroovy.java", cfg.getUnitName(),
+                    assertEquals("Scriptgroovy.java", cfg.getDefaultUnitName(),
                         "Should remove invalid extension and add .java");
                 },
                 
                 // Edge case - invalid characters
                 () -> {
                     ParseConfiguration cfg = ParseConfiguration.testConfig("Test*File");
-                    assertEquals("TestFile.java", cfg.getUnitName(),
+                    assertEquals("TestFile.java", cfg.getDefaultUnitName(),
                         "Should sanitize invalid characters");
                 }
             );
@@ -1173,10 +1171,10 @@ class ParseConfigurationTest {
                 "Factory methods should create separate instances");
 
             // Modify one instance
-            config1.withUnitName("Modified.java");
+            config1.withDefaultUnitName("Modified.java");
 
             // Other instance should not be affected
-            assertNotEquals(config1.getUnitName(), config2.getUnitName(),
+            assertNotEquals(config1.getDefaultUnitName(), config2.getDefaultUnitName(),
                 "Configurations should be independent");
         }
 
@@ -1207,7 +1205,7 @@ class ParseConfigurationTest {
         void configurationShouldHandleRapidChanges() {
             // Act - Rapid configuration changes
             for (int i = 0; i < 100; i++) {
-                config.withUnitName("Test" + i + ".java")
+                config.withDefaultUnitName("Test" + i + ".java")
                       .withBindings(i % 2 == 0)
                       .withSpecificJREVersion(
                           i % 2 == 0 ? ParseConfiguration.JAVA_17 : ParseConfiguration.JAVA_11
@@ -1215,7 +1213,7 @@ class ParseConfigurationTest {
             }
 
             // Assert - Final state should be consistent
-            assertEquals("Test99.java", config.getUnitName());
+            assertEquals("Test99.java", config.getDefaultUnitName());
             assertFalse(config.isResolveBindings());
             assertEquals(ParseConfiguration.JAVA_11, config.getCurrentJLS());
         }
@@ -1228,7 +1226,7 @@ class ParseConfigurationTest {
             ParseConfiguration configWithEmpty = new ParseConfiguration();
 
             // Act
-            configWithNull.withClassPaths(null);
+            configWithNull.withClassPaths();
             configWithEmpty.withClassPaths(new String[0]);
 
             // Assert - Both should result in empty arrays
@@ -1265,16 +1263,16 @@ class ParseConfigurationTest {
         }
 
         @Test
-        @DisplayName("withUnitName() with very long string should be truncated safely")
-        void withUnitNameVeryLongStringShouldBeTruncated() {
+        @DisplayName("withDefaultUnitName() with very long string should be truncated safely")
+        void withDefaultUnitNameVeryLongStringShouldBeTruncated() {
             // Arrange
             String longName = "A".repeat(300);
 
             // Act & Assert
-            assertDoesNotThrow(() -> config.withUnitName(longName));
-            assertTrue(config.getUnitName().length() <= 255,
+            assertDoesNotThrow(() -> config.withDefaultUnitName(longName));
+            assertTrue(config.getDefaultUnitName().length() <= 255,
                 "Very long names should be truncated to max 255 chars");
-            assertTrue(config.getUnitName().endsWith(".java"),
+            assertTrue(config.getDefaultUnitName().endsWith(".java"),
                 "Even after truncation, should end with .java");
         }
 
@@ -1356,7 +1354,7 @@ class ParseConfigurationTest {
 
             // Assert
             assertAll("Getters return non-null",
-                () -> assertNotNull(cfg.getUnitName()),
+                () -> assertNotNull(cfg.getDefaultUnitName()),
                 () -> assertNotNull(cfg.getClassPaths()),
                 () -> assertNotNull(cfg.getSourcePaths()),
                 () -> assertNotNull(cfg.toString())
@@ -1370,14 +1368,14 @@ class ParseConfigurationTest {
             // Act - Perform various operations
             config.withSpecificJREVersion(ParseConfiguration.JAVA_17)
                   .withBindings(true)
-                  .withUnitName("Test.java")
-                  .withClassPaths(new String[]{"lib/"})
-                  .withSourcePaths(null)  // Set to null
+                  .withDefaultUnitName("Test.java")
+                  .withClassPaths("lib/")
+                  .withSourcePaths()  // Set to null
                   .withBindings(false);   // Toggle binding
 
             // Assert - State should still be valid
             assertAll("Valid state maintained",
-                () -> assertNotNull(config.getUnitName()),
+                () -> assertNotNull(config.getDefaultUnitName()),
                 () -> assertNotNull(config.getClassPaths()),
                 () -> assertNotNull(config.getSourcePaths()),
                 () -> assertTrue(config.getCurrentJLS() > 0)

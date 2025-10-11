@@ -1,5 +1,8 @@
 package com.mainApplication;
 
+import java.io.IOException;
+import java.nio.file.Path;
+
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -7,10 +10,26 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
+import com.core.ProjectExplorer;
+import com.model.project.JavaProject;
+
 public class Main {
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		test1();
+	}
+	
+	public static void test1() {
+		Path dir = Path.of("/home/luna/Documents");
+		ProjectExplorer explorer = new ProjectExplorer();
+        //explorer.setMaxDepth(4);
+		try {
+			JavaProject project = explorer.buildJavaProject("myTools", dir);
+			System.out.println(explorer.getStatisticsOnCurrentProject());
+	        System.out.println(project);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public static void test0() {

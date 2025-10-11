@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.Modifier;
 
-class NodeInfo {
+public abstract class NodeInfo {
 	
 	private String name;
 	private NodeVisibility visibility = NodeVisibility.PACKAGE;
@@ -79,7 +79,7 @@ class NodeInfo {
 		return this.modifiers==null || this.modifiers.isEmpty();
 	}
 	
-	public boolean hasModifiers(NodeModifiers modifier) {
+	public boolean hasModifier(NodeModifiers modifier) {
 		return !isModifiersEmpty() && this.modifiers.contains(modifier);
 	}
 	

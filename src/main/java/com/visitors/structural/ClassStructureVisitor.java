@@ -62,7 +62,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		
 		MethodInfo method = new MethodInfo();
 		method.setName(node.getName().getIdentifier());
-		method.setConstructor(node.isConstructor());
+		method.setIsConstructor(node.isConstructor());
 		for (Object param : node.parameters()) {
 			if (param instanceof SingleVariableDeclaration) {
 				method.addParameter(((SingleVariableDeclaration) param).getName().getIdentifier());

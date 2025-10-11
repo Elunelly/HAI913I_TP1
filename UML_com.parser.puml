@@ -1,0 +1,76 @@
+@startuml UML_com_parser
+
+!theme reddress-darkred
+'skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "parser" {
+    class ParseConfiguration {
+        + {static} int JAVA_8
+        + {static} int JAVA_11
+        + {static} int JAVA_17
+        + {static} int JAVA_21
+        + {static} int JAVA_LATEST
+        - {static} Map<String,Integer> JAVA_JLS_LIST
+        - int currentJLS
+        - boolean resolveBindings
+        - String[] classPaths
+        - String[] sourcePaths
+        - String defaultUnitName
+        
+        + ParseConfiguration()
+
+        + {static} ParseConfiguration defaultConfig()
+        + {static} ParseConfiguration fastConfig()
+        + {static} ParseConfiguration testConfig(String defaultUnitName)
+        + {static} ParseConfiguration specificJLSConfig(int wantedJLS)
+        + {static} ParseConfiguration conservativeJLSConfig()
+        + int getCurrentJLS()
+        - void setCurrentJLS(int wantedJLS)
+        + boolean isResolveBindings()
+        - void setResolveBindings(boolean resolveBindings)
+        + String[] getClassPaths()
+        - void setClassPaths(String... classPaths)
+        + String[] getSourcePaths()
+        - void setSourcePaths(String... sourcePaths)
+        + String getDefaultUnitName()
+        - void setDefaultUnitName(String defaultUnitName)
+        + ParseConfiguration withSpecificJREVersion(int value)
+        + ParseConfiguration withBindings(boolean value)
+        + ParseConfiguration withClassPaths(String... value)
+        + ParseConfiguration withSourcePaths(String... value)
+        + ParseConfiguration withDefaultUnitName(String value)
+        - {static} Map<String,Integer> setSupportedJLS()
+        + {static} String fixJavaFileNamingWithDefault(String filename)
+        + {static} String getJLStoString(int version)
+        + boolean isJLSSupported(int version)
+        + String toString()
+    }
+
+    class ASTParserFacade {
+        - ParseConfiguration config
+        - ASTParser parser
+
+        + ASTParserFacade()
+        + ASTParserFacade(ParseConfiguration config)
+
+        + CompilationUnit parseString(String javaString, String unitName)
+        + CompilationUnit parseString(String javaString)
+        + CompilationUnit parseFile(File javaFile)
+        - ASTParser createParser()
+        + ParseConfiguration getConfig()
+        + ASTParser getParser()
+        + {static} ASTParserFacade createDefault()
+    }
+}
+
+' ============ RELATIONSHIPS ============
+ASTParserFacade "1" --> "1" ParseConfiguration : uses
+
+' ============ NOTES ============
+note "TODO:\nWill be implemented later on" as TODO_PARSER
+
+TODO_PARSER .. ParseConfiguration::setSupportedJLS
+
+@enduml

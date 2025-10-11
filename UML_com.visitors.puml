@@ -1,0 +1,106 @@
+@startuml UML_com_visitors
+
+!theme reddress-darkred
+'skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "visitors.base" {
+    abstract class BaseASTVisitor {
+        # VisitorResult result
+
+        + BaseASTVisitor()
+
+        + {abstract} String getVisitorName()
+        + VisitorResult visitAndExtract(CompilationUnit compilationUnit)
+        + boolean visit(CompilationUnit compilationUnit)
+        # void afterVisit()
+        + VisitorResult getResult()
+    }
+    
+    class VisitorResult {
+        - String visitorName {readOnly}
+        - Map<String,Object> data {readOnly}
+        - boolean isSuccess
+        - String errorMessage
+
+        + VisitorResult(String visitorName)
+
+        + boolean addData(String key, Object value)
+        + Object getDataBy(String key)
+        + <T> T getDataBy(String key, Class<T> type)
+        + boolean containsKey(String key)
+        + Map<String,Object> getData()
+        + Map<String,Object> copyData()
+        + void setError(String errorMessage)
+        + String getVisitorName()
+        + boolean isSuccessful()
+        + String getErrorMessage()
+        + String toString()
+    }
+}
+
+package "visitors.structural" {
+    class ClassStructureVisitor {
+        - List<ClassInfo> classes
+        - ClassInfo currentClass
+        - String currentPackage
+        - {static} boolean TypeExploreChildren = true {readOnly}
+        - {static} boolean MethodExploreChildren = true {readOnly}
+        - {static} boolean FieldExploreChildren = true {readOnly}
+
+        + ClassStructureVisitor()
+
+        + String getVisitorName()
+        + boolean visit(PackageDeclaration node)
+        + boolean visit(TypeDeclaration node)
+        + boolean visit(MethodDeclaration node)
+        + boolean visit(FieldDeclaration node)
+    }
+    
+    class PackageStructureVisitor {
+        -Map<String, PackageInfo> packages
+        -String currentPackage
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(PackageDeclaration node)
+        +boolean visit(TypeDeclaration node)
+    }
+    
+    class InheritanceVisitor {
+        -Map<String, List<String>> inheritanceMap
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(TypeDeclaration node)
+        -void extractSuperClasses(TypeDeclaration node)
+    }
+}
+
+package "visitors.metrics" {
+    class LinesOfCodeVisitor {
+        -int totalLines
+        -Map<String, Integer> classLines
+        +VisitorResult visit(JavaProject project)
+        +boolean visit(TypeDeclaration node)
+        +boolean visit(MethodDeclaration node)
+        -int calculateLines(ASTNode node)
+    }
+}
+
+' ============ RELATIONSHIPS ============
+BaseASTVisitor "1" --> "1" VisitorResult : has
+
+BaseASTVisitor <|-- ClassStructureVisitor
+
+PackageStructureVisitor "1" --> "1" VisitorResult : has
+
+InheritanceVisitor "1" --> "1" VisitorResult : has
+
+LinesOfCodeVisitor "1" --> "1" VisitorResult : has
+
+' ============ NOTES ============
+note "TODO:\nWill be implemented later on" as TODO_VISITORS
+
+TODO_VISITORS .. PackageStructureVisitor
+TODO_VISITORS .. InheritanceVisitor
+TODO_VISITORS .. LinesOfCodeVisitor
+
+@enduml

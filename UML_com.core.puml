@@ -1,0 +1,99 @@
+@startuml UML_com_core
+
+!theme reddress-darkred
+'skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "core" {
+    class ProjectExplorer {
+        - List<Pattern> excludedPatterns {readOnly}
+        - List<String> excludedDirectories {readOnly}
+        - int maxDepth
+        - Path currentProjectRootPath
+        - Map<String,List<File>> currentProjectGroupedFilesByPackage {readOnly}
+        - List<ExplorationError> currentProjectErrors {readOnly}
+        - long currentProjectTimeStart
+        - long currentProjectTimeEnd
+
+        + ProjectExplorer()
+        + ProjectExplorer(int maxDepth)
+
+        - void setupExcludedPatterns()
+        - void setupExcludedDirectories()
+        + void addExcludedPattern(String pattern)
+        + void addEcludedDirectory(String directoryName)
+        + void clearExcludedPatterns()
+        + void clearExcludedDirectories()
+        + void setMaxDepth(int maxDepth)
+        + List<File> exploreDirectory(Path rootPath)
+        + List<File> exploreDirectory()
+        + JavaProject buildJavaProject(String projectName, Path rootPath)
+        - void addFileToGroup(File javafile)
+        - String inferPackageName(Path filePath, Path rootPath)
+        - String inferPackageName(Path filePath)
+        - Path findSourceRoot(Path rootPath)
+        - boolean isJavaFile(Path filePath)
+        - boolean isExcluded(Path filePath)
+        + Map<String,List<File>> getFilesByPackage()
+        - void clearCurrentProjectFilesByPackage()
+        + List<ExplorationError> getCurrentProjectErrors()
+        + boolean currentProjectHasErrors()
+        + void clearCurrentProjectErrors()
+        + long getEllapsedTimeOfExploration()
+        + String getStatisticsOnCurrentProject()
+    }
+
+    class ExplorationError {
+        - {static} long serialVersionUID = 1L {readOnly}
+        - Path path {readOnly}
+        - String message {readOnly}
+        - Exception cause {readOnly}
+
+        + ExplorationError(Path path, String message, Exception cause)
+
+        + Path getPath()
+        + String getMessage()
+        + Exception getCause()
+        + String toString()
+    }
+
+    class ASTProcessor {
+        - List<BaseASTVisitor> visitors
+        - List<MetricExtractor> extractors
+        - ASTParserFacade parserFacade
+        - ProjectExplorer explorer
+        - StatisticCalculator calculator
+
+        + AnalysisResult processProject(String path)
+        + void addVisitor(BaseASTVisitor visitor)
+        + void addExtractor(MetricExtractor extractor)
+        + void executeVisitors(JavaProject project)
+        + void calculateMetrics(AnalysisResult result)
+    }
+
+    class AnalysisResult {
+        - JavaProject project
+        - Map<String,Object> metrics
+        - List<ClassInfo> classes
+        - List<MethodCall> methodCalls
+
+        + void addMetric(String name, Object value)
+        + Object getMetric(String name)
+        + JavaProject getProject()
+    }
+}
+
+' ============ RELATIONSHIPS ============
+ProjectExplorer "1" --> "*" ExplorationError : has
+
+ASTProcessor "1" --> "1" ProjectExplorer : uses
+ASTProcessor "1" --> "1" AnalysisResult : creates
+
+' ============ NOTES ============
+note "TODO:\nWill be implemented later on" as TODO_CORE
+
+TODO_CORE .. AnalysisResult
+TODO_CORE .. ASTProcessor
+
+@enduml

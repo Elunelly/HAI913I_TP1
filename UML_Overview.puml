@@ -1,0 +1,19 @@
+@startuml UML_com_Overview
+
+!theme reddress-darkred
+'skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+hide methods
+'hide attributes
+
+' ============ PACKAGES ============
+!include UML_com.core.puml
+!include UML_com.model.puml
+!include UML_com.parser.puml
+!include UML_com.visitors.puml
+
+' ============ RELATIONSHIPS ============
+
+' ============ NOTES ============
+
+@enduml

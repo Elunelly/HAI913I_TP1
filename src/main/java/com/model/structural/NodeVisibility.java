@@ -30,7 +30,7 @@ public enum NodeVisibility {
 		return this.getAccessLevel() > that.getAccessLevel();
 	}
 	
-	public int getAccessLevel() {
+	private int getAccessLevel() {
 		switch (this) {
 			case PUBLIC: return 3;
 			case PROTECTED: return 2;
