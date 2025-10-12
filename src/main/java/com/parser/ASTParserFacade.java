@@ -3,11 +3,21 @@ package com.parser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.core.exceptions.ExplorationError;
+import com.exceptions.ASTError;
+import com.parser.exceptions.ParsingFileError;
 
 public class ASTParserFacade {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ASTParserFacade.class);
 	
 	private ParseConfiguration config;
 	private ASTParser parser;
@@ -45,6 +55,36 @@ public class ASTParserFacade {
 		}
 	}
 	
+	public List<CompilationUnit> parseFiles(List<ASTError> errorsCollector, List<File> files) {
+		ArrayList<CompilationUnit> result = new ArrayList<>();
+		for (File file : files) {
+			try {
+				CompilationUnit cu = parseFile(file);
+				result.add(cu);
+			} catch (IllegalArgumentException e) {
+				if (errorsCollector != null)
+					errorsCollector.add(new ExplorationError(file.toPath(), e.getMessage(), e));
+			} catch (RuntimeException e) {
+				if (errorsCollector != null)
+					errorsCollector.add(new ParsingFileError(file, e.getMessage(), e));
+			}
+		}
+		return result;
+		
+	}
+	
+	public List<CompilationUnit> parseFiles(List<ASTError> errorsCollector, File... files) {
+		return parseFiles(errorsCollector, files);
+	}
+	
+	public List<CompilationUnit> parseFiles(List<File> files) {
+		return parseFiles(null, files);
+	}
+	
+	public List<CompilationUnit> parseFiles(File... files) {
+		return parseFiles(null, files);
+	}
+	
 	private ASTParser createParser() {
 		ASTParser parser = ASTParser.newParser(this.config.getCurrentJLS());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
@@ -58,6 +98,14 @@ public class ASTParserFacade {
 	
 	public static ASTParserFacade createDefault() {
 		return new ASTParserFacade();
+	}
+	
+	@Override
+	public String toString() {
+		return ("ASTParserFacade{"
+				+ "config=%s, "
+				+ "parser=%s}")
+				.formatted(config, parser);
 	}
 
 }

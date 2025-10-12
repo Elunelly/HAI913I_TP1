@@ -5,8 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.Modifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class NodeInfo {
+	
+	private static final Logger logger = LoggerFactory.getLogger(NodeInfo.class);
 	
 	private String name;
 	private NodeVisibility visibility = NodeVisibility.PACKAGE;
@@ -102,6 +106,23 @@ public abstract class NodeInfo {
 	// Inherited class will have to @Override this class
 	public String getSignature() {
 		return "";
+	}
+
+	@Override
+	public String toString() {
+		return ("Class{"
+				+ "visibility=%s, "
+				+ "name=%s, "
+				+ "isStatic=%s, "
+				+ "isAbstract=%s, "
+				+ "isFinal=%s}")
+				.formatted(
+					visibility.name(),
+					name,
+					String.valueOf(isStatic),
+					String.valueOf(isAbstract),
+					String.valueOf(isFinal)
+				);
 	}
 
 }

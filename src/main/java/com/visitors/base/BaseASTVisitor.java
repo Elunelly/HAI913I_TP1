@@ -2,8 +2,12 @@ package com.visitors.base;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class BaseASTVisitor extends ASTVisitor {
+	
+	private static final Logger logger = LoggerFactory.getLogger(BaseASTVisitor.class);
 	
 	protected VisitorResult result;
 	
@@ -35,5 +39,13 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	protected void afterVisit() {}
 	
 	public VisitorResult getResult() {return this.result;}
+	
+	@Override
+	public String toString() {
+		return ("BaseASTVisitor{"
+				+ "name=%s, "
+				+ "result=%s}")
+				.formatted(getVisitorName(), result);
+	}
 
 }

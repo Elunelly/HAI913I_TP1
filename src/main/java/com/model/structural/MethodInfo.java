@@ -4,7 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class MethodInfo extends NodeInfo {
+	
+	private static final Logger logger = LoggerFactory.getLogger(MethodInfo.class);
 
     protected String returnType;
     protected boolean isConstructor;
@@ -45,8 +50,26 @@ public class MethodInfo extends NodeInfo {
 	}
 
 	@Override
-    public String toString() {
-    	return "Method{%s %s(%d parameters)}".formatted(getVisibility(),getName(),getParameters().size());
-    }
+	public String toString() {
+		return ("Class{"
+				+ "visibility=%s, "
+				+ "name=%s, "
+				+ "returnType=%s, "
+				+ "isConstructor=%s, "
+				+ "isStatic=%s, "
+				+ "isAbstract=%s, "
+				+ "isFinal=%s, "
+				+ "parameters=%d}")
+				.formatted(
+					this.getVisibility().name(),
+					this.getName(),
+					returnType,
+					String.valueOf(isConstructor),
+					String.valueOf(this.isStatic()),
+					String.valueOf(this.isAbstract()),
+					String.valueOf(this.isFinal()),
+					parameters.size()
+				);
+	}
 
 }

@@ -14,14 +14,20 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.core.exceptions.ExplorationError;
 import com.model.project.JavaProject;
 import com.model.project.PackageInfo;
+import com.utils.table.TableUI;
 
 public class ProjectExplorer {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ProjectExplorer.class);
 
-	private final List<Pattern> excludedPatterns = new ArrayList<>();
+	private final List<String> excludedPatterns = new ArrayList<>();
 	private final List<String> excludedDirectories = new ArrayList<>();
 	private int maxDepth = Integer.MAX_VALUE;
 	private Path currentProjectRootPath;
@@ -31,14 +37,40 @@ public class ProjectExplorer {
 	private long currentProjectTimeEnd;
 
 	public ProjectExplorer() {
-		setupExcludedPatterns();
-		setupExcludedDirectories();
 	}
 	
 	public ProjectExplorer(int maxDepth) {
+		setMaxDepth(maxDepth);
+	}
+	
+	public ProjectExplorer withDefaultExcludedPatterns() {
+		setupExcludedPatterns();
+		return this;
+	}
+	
+	public ProjectExplorer withDefaultExcludedDirectories() {
+		setupExcludedDirectories();
+		return this;
+	}
+	
+	public ProjectExplorer withDefaultExclusions() {
 		setupExcludedPatterns();
 		setupExcludedDirectories();
-		setMaxDepth(maxDepth);
+		return this;
+	}
+	
+	public ProjectExplorer withExcludedPatterns(String... patterns) {
+		for (String pattern : patterns) {
+			addExcludedPattern(pattern);
+		}
+		return this;
+	}
+	
+	public ProjectExplorer withExcludedDirectories(String... directoriesName) {
+		for (String directoryName : directoriesName) {
+			addExcludedDirectory(directoryName);
+		}
+		return this;
 	}
 	
 	private void setupExcludedPatterns() {
@@ -55,49 +87,81 @@ public class ProjectExplorer {
 	}
 
 	public void addExcludedPattern(String pattern) {
-		excludedPatterns.add(Pattern.compile(pattern));
+		if (pattern!=null && !excludedPatterns.contains(pattern)) {
+			excludedPatterns.add(pattern);
+			logger.debug("Added excluded pattern: "+pattern);
+		}
 	}
 
 	public void addExcludedDirectory(String directoryName) {
-		excludedDirectories.add(directoryName);
+		directoryName = directoryName.toLowerCase();
+		if (directoryName!=null && !excludedDirectories.contains(directoryName)) {
+			excludedDirectories.add(directoryName);
+			logger.debug("Added excluded directory: "+directoryName);
+		}
 	}
 
 	public void clearExcludedPatterns() {
 		excludedPatterns.clear();
+		logger.debug("Cleared all excluded patterns");
 	}
 
 	public void clearExcludedDirectories() {
 		excludedDirectories.clear();
+		logger.debug("Cleared all excluded directories");
 	}
 
 	public void setMaxDepth(int maxDepth) {
+		int old = this.maxDepth;
 		this.maxDepth = Math.max(0,maxDepth+1);
+		logger.debug("Change value of 'maxDepth': %s -> %s".formatted(old,this.maxDepth));
 	}
-
-	public List<File> exploreDirectory(Path rootPath) throws IOException {
+	
+	public void setupCurrentProject(Path rootPath) throws IOException {
 		if (rootPath == null)
 			throw new IllegalArgumentException("Root path cannot be null");
 		if (!Files.exists(rootPath))
 			throw new IOException("Path does not exist: " + rootPath);
 		if (!Files.isDirectory(rootPath))
 			throw new IOException("Path is not a directory: " + rootPath);
-		this.currentProjectTimeStart = System.currentTimeMillis();
-		this.currentProjectRootPath = findSourceRoot(rootPath);
+		
 		clearCurrentProjectErrors();
 		clearCurrentProjectFilesByPackage();
+		Path old = this.currentProjectRootPath;
+		this.currentProjectRootPath = findSourceRoot(rootPath);
+		logger.debug("Change value of 'currentProjectRootPath': %s -> %s".formatted(old,this.currentProjectRootPath));
+	}
+	
+	public void startCurrentProjectTimer() {
+		this.currentProjectTimeStart = System.currentTimeMillis();
+		logger.debug("Change starting timer on project "+currentProjectRootPath);
+	}
+	
+	public void stopCurrentProjectTimer() {
+		this.currentProjectTimeEnd = System.currentTimeMillis();
+		logger.debug("Change stoping timer on project "+currentProjectRootPath);
+	}
+
+	public List<File> exploreDirectory(Path rootPath) throws IOException {
+		startCurrentProjectTimer();
+		setupCurrentProject(rootPath);
 
 		List<File> result = new ArrayList<>();
-		Files.walkFileTree(rootPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), maxDepth, new SimpleFileVisitor<Path>() {
+		Files.walkFileTree(currentProjectRootPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), maxDepth, new SimpleFileVisitor<Path>() {
 
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-				if (excludedDirectories.contains(dir.getFileName().toString()))
+				logger.trace("Exploring directory: "+dir);
+				if (excludedDirectories.contains(dir.getFileName().toString().toLowerCase())) {
+					logger.trace("This directory is excluded, skipping next...");
 					return FileVisitResult.SKIP_SUBTREE;
+				}
 				// Avoid self-cycling symbolicLink
 				if (Files.isSymbolicLink(dir)) {
 				    try {
 				        Path target = Files.readSymbolicLink(dir);
 				        if (dir.startsWith(target)) {
+				        	logger.trace("The symbolic link is cycling on itself, skipping next...");
 				            return FileVisitResult.SKIP_SUBTREE;
 				        }
 				    } catch (IOException ignored) {}
@@ -107,6 +171,7 @@ public class ProjectExplorer {
 
 			@Override
 			public FileVisitResult visitFile(Path filename, BasicFileAttributes attrs) {
+				logger.trace("Checking file: "+filename);
 				if (isJavaFile(filename) && !isExcluded(filename)) {
 					File file = filename.toFile();
 					result.add(file);
@@ -123,13 +188,14 @@ public class ProjectExplorer {
 
 			@Override
 			public FileVisitResult postVisitDirectory(Path dir, IOException exception) {
-				if (exception != null)
+				if (exception != null) {
 					currentProjectErrors.add(new ExplorationError(dir, "Error visiting directory", exception));
+				}
 				return FileVisitResult.CONTINUE;
 			}
 		});
 
-		this.currentProjectTimeEnd = System.currentTimeMillis();
+		stopCurrentProjectTimer();
 		return result;
 	}
 
@@ -137,8 +203,11 @@ public class ProjectExplorer {
 		return exploreDirectory(currentProjectRootPath);
 	}
 
-	public JavaProject buildJavaProject(String projectName, Path rootPath) throws IOException {
-		exploreDirectory(rootPath);
+	public JavaProject buildJavaProject(String projectName, Path rootPath, List<File> javaFiles) throws IOException {
+		if (javaFiles == null)
+			exploreDirectory(rootPath);
+		else
+			groupAllFilesByPackage(javaFiles);
 		JavaProject project = new JavaProject(projectName, currentProjectRootPath);
 
 		for (Map.Entry<String, List<File>> entry : currentProjectGroupedFilesByPackage.entrySet()) {
@@ -151,10 +220,25 @@ public class ProjectExplorer {
 		return project;
 	}
 	
+	public JavaProject buildJavaProject(String projectName, Path rootPath) throws IOException {
+		return buildJavaProject(projectName, rootPath, null);
+	}
+	
+	private void groupAllFilesByPackage(List<File> files) {
+		clearCurrentProjectFilesByPackage();
+		for (File file : files) {
+			Path filePath = file.toPath();
+			if (!isJavaFile(filePath) || isExcluded(filePath)) continue;
+			addFileToGroup(file);
+		}
+		stopCurrentProjectTimer();
+	}
+	
 	private void addFileToGroup(File javaFile) {
 		if (javaFile == null) return;
 		String packageName = inferPackageName(javaFile.toPath());
 		currentProjectGroupedFilesByPackage.computeIfAbsent(packageName, k -> new ArrayList<>()).add(javaFile);
+		logger.debug("Added file on '"+packageName+"': "+javaFile.getName());
 	}
 
 	private String inferPackageName(Path filePath, Path rootPath) {
@@ -198,8 +282,8 @@ public class ProjectExplorer {
 	private boolean isExcluded(Path filePath) {
 		String fileName = filePath.getFileName().toString();
 
-		for (Pattern pattern : excludedPatterns) {
-			if (pattern.matcher(fileName).matches()) {
+		for (String pattern : excludedPatterns) {
+			if (pattern.matches(fileName)) {
 				return true;
 			}
 		}
@@ -211,6 +295,7 @@ public class ProjectExplorer {
 
 	private void clearCurrentProjectFilesByPackage() {
 		currentProjectGroupedFilesByPackage.clear();
+		logger.debug("Cleared all grouped files by package");
 	}
 	
 	public List<ExplorationError> getCurrentProjectErrors() {
@@ -223,6 +308,7 @@ public class ProjectExplorer {
 
 	private void clearCurrentProjectErrors() {
 		currentProjectErrors.clear();
+		logger.debug("Cleared all current project errors trace");
 	}
 	
 	public long getEllapsedTimeOfExploration() {
@@ -231,13 +317,25 @@ public class ProjectExplorer {
 
 	public String getStatisticsOnCurrentProject() {
 		int totalFiles = currentProjectGroupedFilesByPackage.values().stream().mapToInt(List::size).sum();
-		int keyLength = 20;
-		StringBuilder stats = new StringBuilder();
-		stats.append("=== Exploration Statistics ===");
-		stats.append(String.format("\n%-"+keyLength+"s: %dms", "Ellapsed time", getEllapsedTimeOfExploration()));
-		stats.append(String.format("\n%-"+keyLength+"s: %d", "Total packages", currentProjectGroupedFilesByPackage.size()));
-		stats.append(String.format("\n%-"+keyLength+"s: %d", "Total Java files", totalFiles));
-		stats.append(String.format("\n%-"+keyLength+"s: %d", "Errors encountered", currentProjectErrors.size()));
-		return stats.toString();
+		return TableUI.titledTable(
+			currentProjectRootPath.toString(),
+			List.of(
+				new String[] {"Ellapsed time", getEllapsedTimeOfExploration()+"ms"},
+				new String[] {"Total packages", String.valueOf(currentProjectGroupedFilesByPackage.size())},
+				new String[] {"Total Java files", String.valueOf(totalFiles)},
+				new String[] {"Errors encountered", String.valueOf(currentProjectErrors.size())}
+			),
+			":"
+		);
 	}
+	
+	@Override
+	public String toString() {
+		return ("ProjectExplorer{"
+				+ "excludedPatterns=%s, "
+				+ "excludedDirectories=%s, "
+				+ "maxDepth=%d}")
+				.formatted(excludedPatterns,excludedDirectories,maxDepth);
+	}
+	
 }

@@ -1,32 +1,81 @@
 package com.core;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.model.project.JavaProject;
 import com.model.structural.ClassInfo;
-import com.model.structural.MethodCall;
 
 public class AnalysisResult {
 	
-	private JavaProject project;
-	private Map<String,Object> metrics;
-	private List<ClassInfo> classes;
-	private List<MethodCall> methodCalls;
+	private static final Logger logger = LoggerFactory.getLogger(AnalysisResult.class);
 	
-	public boolean addMetric(String name, Object value) {
-		// TODO
-		return this.metrics.put(name, value) != null;
+	private final JavaProject project;
+	private final Map<String,Object> metrics = new HashMap<>();
+	//private final List<MethodCall> methodCalls = new ArrayList<>();
+	
+	public AnalysisResult(JavaProject project) {
+		this.project = project;
+	}
+	
+	public Map<String,Object> getMetrics() {return Collections.unmodifiableMap(metrics);}
+	
+	public Map<String,Object> copyMetrics() {return new HashMap<>(metrics);}
+	
+	public void addMetric(String name, Object value) {
+		Object old = metrics.get(name);
+		metrics.put(name, value);
+		if (old==null)
+			logger.debug("Added metric '"+name+"': "+value.toString());
+		else
+			logger.debug("Change value of '"+name+"': %s -> %s".formatted(old,metrics.get(name)));
+	}
+	
+	public void addAllMetrics(Map<String,Object> metrics) {
+		for (Entry<String,Object> metric : metrics.entrySet()) {
+			addMetric(metric.getKey(),metric.getValue());
+		}
 	}
 	
 	public Object getMetric(String name) {
-		// TODO
 		return this.metrics.get(name);
 	}
 	
+	public boolean hasMetric(String name) {
+		return metrics.containsKey(name);
+	}
+	
+	public boolean hasMetrics() {
+		return !metrics.isEmpty();
+	}
+	
 	public JavaProject getProject() {
-		// TODO
 		return this.project;
+	}
+	
+	public List<ClassInfo> getClasses() {return project.getClasses();}
+	
+	public int getTotalPackagesCount() {return project.getPackages().size();}
+	
+	public int getTotalClassesCount() {return getClasses().size();}
+	
+	public int getTotalMethodsCount() {return project.getMethods().size();}
+	
+	public int getTotalFieldsCount() {return project.getFields().size();}
+	
+	@Override
+	public String toString() {
+		return ("AnalysisResult{"
+				+ "projectName=%s, "
+				+ "metrics=%d, "
+				+ "classes=%d}")
+				.formatted(project.getName(),metrics.size(),getTotalClassesCount());
 	}
 
 }

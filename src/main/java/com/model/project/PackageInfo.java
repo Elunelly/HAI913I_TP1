@@ -7,9 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.model.structural.ClassInfo;
 
 public class PackageInfo {
+	
+	private static final Logger logger = LoggerFactory.getLogger(PackageInfo.class);
 	
 	private final String name;
 	private PackageInfo parentPackage;
@@ -60,7 +65,9 @@ public class PackageInfo {
 	}
 	
 	public void addClass(ClassInfo classInfo) {
-		if (classInfo!=null && !this.classes.contains(classInfo)) this.classes.add(classInfo);
+		if (classInfo!=null && !this.classes.contains(classInfo)) {
+			this.classes.add(classInfo);
+		}
 	}
 	
 	public boolean hasClasses() {
@@ -127,8 +134,12 @@ public class PackageInfo {
 	
 	@Override
 	public String toString() {
-		return "Package{name=%s, methods=%d}"
-				.formatted(getName(),getClasses().size());
+		return ("Package{"
+				+ "name=%s, "
+				+ "parent=%s, "
+				+ "subPackages=%d, "
+				+ "classes=%d}")
+				.formatted(name, parentPackage, subPackages.size(), classes.size());
 	}
 	
 }

@@ -1,8 +1,15 @@
-package com.core;
+package com.core.exceptions;
 
 import java.nio.file.Path;
 
-class ExplorationError extends Exception {
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.exceptions.ASTError;
+
+public class ExplorationError extends ASTError {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ExplorationError.class);
 	
 	private static final long serialVersionUID = 1L;
 	private final Path path;
@@ -10,26 +17,31 @@ class ExplorationError extends Exception {
 	private final Exception cause;
 
 	public ExplorationError(Path path, String message, Exception cause) {
+		super();
 		this.path = path;
 		this.message = message;
 		this.cause = cause;
+		logger.error(this.toString());
 	}
 
-	public Path getPath() {
+	@Override
+	public Path getContext() {
 		return path;
 	}
 
+	@Override
 	public String getMessage() {
 		return message;
 	}
 
+	@Override
 	public Exception getCause() {
 		return cause;
 	}
 
 	@Override
 	public String toString() {
-		return String.format("Error at %s: %s", path, message);
+		return String.format("ExplorationError at %s: %s", path, message);
 	}
 	
 }

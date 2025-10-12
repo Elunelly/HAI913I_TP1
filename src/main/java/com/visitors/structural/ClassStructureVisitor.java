@@ -1,6 +1,7 @@
 package com.visitors.structural;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.FieldDeclaration;
@@ -9,6 +10,8 @@ import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
@@ -16,6 +19,8 @@ import com.model.structural.MethodInfo;
 import com.visitors.base.BaseASTVisitor;
 
 public class ClassStructureVisitor extends BaseASTVisitor {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ClassStructureVisitor.class);
 	
 	private List<ClassInfo> classes = new ArrayList<>();
 	private ClassInfo currentClass = null;
@@ -27,6 +32,10 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	public ClassStructureVisitor() {
 		super();
 	}
+	
+	public List<ClassInfo> getClasses() {return Collections.unmodifiableList(classes);}
+	
+	public List<ClassInfo> copyClasses() {return new ArrayList<>(classes);}
 	
 	@Override
 	public String getVisitorName() {
@@ -95,6 +104,15 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		}
 		
 		return FieldExploreChildren;
+	}
+	
+	@Override
+	public String toString() {
+		return ("ClassStructureVisitor{"
+				+ "name=%s, "
+				+ "classes=%d, "
+				+ "result=%s}")
+				.formatted(this.getVisitorName(), classes.size(), this.getResult());
 	}
 
 }

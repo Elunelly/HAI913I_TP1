@@ -4,7 +4,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class VisitorResult {
+	
+	private static final Logger logger = LoggerFactory.getLogger(VisitorResult.class);
 	
 	private final String visitorName;
 	private final Map<String,Object> data = new HashMap<>();
@@ -51,8 +56,11 @@ public class VisitorResult {
 	
 	@Override
 	public String toString() {
-		return "VisitorResult{visitor='%s', successful=%s, dataKeys=%s}"
-				.formatted(getVisitorName(),isSuccessful(),getData().toString());
+		return ("VisitorResult{"
+				+ "name=%s, "
+				+ "successful=%s, "
+				+ "data=%s}")
+				.formatted(visitorName, isSuccess, data);
 	}
 
 }

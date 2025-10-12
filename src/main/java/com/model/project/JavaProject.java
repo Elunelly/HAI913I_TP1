@@ -10,29 +10,48 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.core.ASTProcessor;
 import com.model.structural.ClassInfo;
+import com.model.structural.FieldInfo;
+import com.model.structural.MethodInfo;
 
 public class JavaProject {
+	
+	private static final Logger logger = LoggerFactory.getLogger(JavaProject.class);
 	
 	private final String name;
 	private final Path rootPath;
 	private final Map<String,PackageInfo> packages = new HashMap<>();
 	private final List<ClassInfo> classes = new ArrayList<>();
+	private final List<MethodInfo> methods = new ArrayList<>();
+	private final List<FieldInfo> fields = new ArrayList<>();
 	private final Map<String,ClassInfo> classIndex = new HashMap<>();
 	private final List<CompilationUnit> compilationUnits = new ArrayList<>();
 	
 	public JavaProject(String name, Path rootPath) {
-		if (name==null || name.isBlank())
-			throw new IllegalArgumentException("Project name cannot be null or blank");
 		if (rootPath==null)
-			throw new IllegalArgumentException("Project path cannot be null");
+			rootPath = Path.of("");
+		if (name==null || name.isBlank())
+			name = rootPath.getFileName().toString();
 		this.name = name.trim();
+		logger.debug("Setting project name:"+this.name);
 		this.rootPath = rootPath;
+		logger.debug("Setting project root:"+this.rootPath);
 	}
 	
 	public JavaProject(String name) {
-		this(name,Path.of(""));
+		this(name, null);
+	}
+	
+	public JavaProject(Path rootPath) {
+		this(null, rootPath);
+	}
+	
+	public JavaProject() {
+		this(null, null);
 	}
 	
 	public String getName() {return this.name;}
@@ -58,7 +77,23 @@ public class JavaProject {
 	}
 	
 	public void addPackage(PackageInfo packageInfo) {
-		if (packageInfo!=null) this.packages.putIfAbsent(packageInfo.getName(),packageInfo);
+		if (packageInfo!=null) {
+			PackageInfo old = this.packages.putIfAbsent(packageInfo.getName(),packageInfo);
+			if (old==null)
+				logger.debug("Added package '%s': %s".formatted(packageInfo.getName(),packageInfo));
+			else
+				logger.debug("Change value of '%s': %s -> %s".formatted(packageInfo.getName(),old,packageInfo));
+		}
+	}
+	
+	public void addAllPackages(PackageInfo... packageInfos) {
+		for (PackageInfo packageInfo : packageInfos) {
+			addPackage(packageInfo);
+		}
+	}
+	
+	public void addAllPackages(List<PackageInfo> packageInfos) {
+		addAllPackages((PackageInfo[]) packageInfos.toArray());
 	}
 	
 	public boolean hasPackages() {
@@ -96,7 +131,12 @@ public class JavaProject {
 	public void addClass(ClassInfo classInfo) {
 		if (classInfo!=null && !this.classes.contains(classInfo)) {
 			this.classes.add(classInfo);
+			logger.debug("Added classInfo: "+classInfo.getSignature());
+			
 			this.classIndex.put(classInfo.getName(), classInfo);
+			addAllMethods(classInfo.copyMethods());
+			addAllFields(classInfo.copyFields());
+			
 			String packageName = classInfo.getPackageName();
 			if (packageName!=null && this.packages.containsKey(packageName))
 				this.packages.get(packageName).addClass(classInfo);
@@ -109,6 +149,10 @@ public class JavaProject {
 		}
 	}
 	
+	public void addAllClasses(List<ClassInfo> classInfos) {
+		addAllClasses((ClassInfo[]) classInfos.toArray());
+	}
+	
 	public ClassInfo getClass(String name) {
 		return this.classIndex.get(name);
 	}
@@ -119,6 +163,44 @@ public class JavaProject {
 				.collect(Collectors.toUnmodifiableList());
 	}
 	
+	public List<MethodInfo> getMethods() {return Collections.unmodifiableList(methods);}
+	
+	public List<MethodInfo> copyMethods() {return new ArrayList<>(methods);}
+	
+	public void addMethod(MethodInfo methodInfo) {
+		if (methodInfo != null && !methods.contains(methodInfo) && methods.add(methodInfo))
+			logger.debug("Added MethodInfo: "+methodInfo.getSignature());
+	}
+	
+	public void addAllMethods(MethodInfo... methodInfos) {
+		for (MethodInfo methodInfo : methodInfos) {
+			addMethod(methodInfo);
+		}
+	}
+	
+	public void addAllMethods(List<MethodInfo> methodInfos) {
+		addAllMethods((MethodInfo[]) methodInfos.toArray());
+	}
+	
+	public List<FieldInfo> getFields() {return Collections.unmodifiableList(fields);}
+	
+	public List<FieldInfo> copyFields() {return new ArrayList<>(fields);}
+	
+	public void addField(FieldInfo fieldInfo) {
+		if (fieldInfo != null && !fields.contains(fieldInfo) && fields.add(fieldInfo))
+			logger.debug("Added FieldInfo: "+fieldInfo.getSignature());
+	}
+	
+	public void addAllFields(FieldInfo... fieldInfos) {
+		for (FieldInfo fieldInfo : fieldInfos) {
+			addField(fieldInfo);
+		}
+	}
+	
+	public void addAllFields(List<FieldInfo> fieldInfos) {
+		addAllFields((FieldInfo[]) fieldInfos.toArray());
+	}
+	
 	
 	
 	public List<CompilationUnit> getCompilationUnits() {return Collections.unmodifiableList(this.compilationUnits);}
@@ -126,7 +208,10 @@ public class JavaProject {
 	public List<CompilationUnit> copyCompilationUnits() {return new ArrayList<>(this.compilationUnits);}
 	
 	public void addCompilationUnit(CompilationUnit compilationUnit) {
-		if (compilationUnit!=null && !this.compilationUnits.contains(compilationUnit)) this.compilationUnits.add(compilationUnit);
+		if (compilationUnit!=null && !this.compilationUnits.contains(compilationUnit)) {
+			this.compilationUnits.add(compilationUnit);
+			logger.debug("Added CompilationUnit: "+compilationUnit);
+		}
 	}
 	
 	public void addAllCompilationUnits(CompilationUnit...compilationUnits) {
@@ -135,23 +220,37 @@ public class JavaProject {
 		}
 	}
 	
+	public void addAllCompilationUnits(List<CompilationUnit> compilationUnits) {
+		addAllCompilationUnits((CompilationUnit[]) compilationUnits.toArray());
+	}
+	
 	
 	
 	public boolean hasClasses() {
 		return !this.classes.isEmpty();
 	}
 	
-	@Override
-    public String toString() {
-        return String.format("JavaProject{name='%s', packages=%d, classes=%d, path='%s'}",
-                this.name, this.packages.size(), this.classes.size(), this.rootPath);
-    }
-	
 	public void clear() {
 		this.packages.clear();
 		this.classes.clear();
+		this.methods.clear();
+		this.fields.clear();
 		this.classIndex.clear();
 		this.compilationUnits.clear();
+		logger.debug("Cleared JavaProject (packages, classes, methods, fields, compilationUnits): "+this.name);
 	}
+	
+	@Override
+    public String toString() {
+        return ("JavaProject{"
+        		+ "name=%s, "
+        		+ "root=%s, "
+        		+ "packages=%d, "
+        		+ "classes=%d, "
+        		+ "methods=%d, "
+        		+ "fields=%d, "
+        		+ "compilationUnits=%d}")
+        		.formatted(name, rootPath, packages.size(), classes.size(), methods.size(), fields.size(), compilationUnits.size());
+    }
 
 }

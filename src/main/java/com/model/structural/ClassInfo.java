@@ -4,7 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ClassInfo extends NodeInfo {
+	
+	private static final Logger logger = LoggerFactory.getLogger(ClassInfo.class);
 	
 	protected String packageName = "";
 	protected boolean isInterface;
@@ -130,7 +135,27 @@ public class ClassInfo extends NodeInfo {
 
 	@Override
 	public String toString() {
-		return "Class{name=%s,methods=%d,fields=%d".formatted(this.getName(),getMethods().size(),getFields().size());
+		return ("Class{"
+				+ "visibility=%s, "
+				+ "name=%s, "
+				+ "isInterface=%s, "
+				+ "isStatic=%s, "
+				+ "isAbstract=%s, "
+				+ "isFinal=%s, "
+				+ "interfaces=%d, "
+				+ "methods=%d, "
+				+ "fields=%d}")
+				.formatted(
+					this.getVisibility().name(),
+					this.getName(),
+					String.valueOf(isInterface),
+					String.valueOf(this.isStatic()),
+					String.valueOf(this.isAbstract()),
+					String.valueOf(this.isFinal()),
+					interfaces.size(),
+					methods.size(),
+					fields.size()
+				);
 	}
 	
 }
