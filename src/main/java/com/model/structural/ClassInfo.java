@@ -46,7 +46,7 @@ public class ClassInfo extends NodeInfo {
 		logger.debug("Change value of 'superClass': %s -> %s".formatted(old,this.superClass));
 	}
 
-	protected List<String> getInterfaces() {return Collections.unmodifiableList(this.interfaces);}
+	public List<String> getInterfaces() {return Collections.unmodifiableList(this.interfaces);}
 	
 	public List<String> copyInterfaces() {return new ArrayList<>(this.interfaces);}
 
@@ -55,7 +55,7 @@ public class ClassInfo extends NodeInfo {
 				logger.debug("Interface added: %s".formatted(interfaceName));
 	}
 
-	protected List<MethodInfo> getMethods() {return Collections.unmodifiableList(this.methods);}
+	public List<MethodInfo> getMethods() {return Collections.unmodifiableList(this.methods);}
 	
 	public List<MethodInfo> copyMethods() {return new ArrayList<>(this.methods);}
 
@@ -64,7 +64,7 @@ public class ClassInfo extends NodeInfo {
 			logger.debug("Method added: %s".formatted(method));
 	}
 
-	protected List<FieldInfo> getFields() {return Collections.unmodifiableList(this.fields);}
+	public List<FieldInfo> getFields() {return Collections.unmodifiableList(this.fields);}
 	
 	public List<FieldInfo> copyFields() {return new ArrayList<>(this.fields);}
 

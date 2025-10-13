@@ -65,13 +65,25 @@ public class AnalysisResult {
 	
 	public int getTotalClassesCount() {return getClasses().size();}
 	
+	public int getTotalMethodsCount() {return getClasses().stream().mapToInt(c -> c.getMethods().size()).sum();}
+	
+	public int getTotalFieldsCount() {return getClasses().stream().mapToInt(c -> c.getFields().size()).sum();}
+	
 	@Override
 	public String toString() {
 		return ("AnalysisResult{"
 				+ "projectName=%s, "
 				+ "metrics=%d, "
-				+ "classes=%d}")
-				.formatted(project.getName(),metrics.size(),getTotalClassesCount());
+				+ "classes=%d, "
+				+ "methods=%d, "
+				+ "fields=%d}")
+				.formatted(
+					project.getName(),
+					metrics.size(),
+					getTotalClassesCount(),
+					getTotalMethodsCount(),
+					getTotalFieldsCount()
+				);
 	}
 
 }

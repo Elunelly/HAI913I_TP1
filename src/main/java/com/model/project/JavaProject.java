@@ -60,7 +60,7 @@ public class JavaProject {
 	public Map<String,PackageInfo> copyMappedPackages() {return new HashMap<>(this.packages);}
 	
 	public List<PackageInfo> getPackages() {
-		return Collections.unmodifiableList(new ArrayList<>(this.packages.values()));
+		return new ArrayList<>(this.packages.values());
 	}
 	
 	public PackageInfo getPackage(String name) {
@@ -176,7 +176,9 @@ public class JavaProject {
 	}
 	
 	public void addAllCompilationUnits(List<CompilationUnit> compilationUnits) {
-		addAllCompilationUnits((CompilationUnit[]) compilationUnits.toArray());
+		for (CompilationUnit compilationUnit : compilationUnits) {
+			addCompilationUnit(compilationUnit);
+		}
 	}
 	
 	

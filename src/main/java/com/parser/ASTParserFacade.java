@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -95,7 +96,7 @@ public class ASTParserFacade {
 	}
 	
 	public List<CompilationUnit> parseFiles(List<ASTError> errorsCollector, File... files) {
-		return parseFiles(errorsCollector, files);
+		return parseFiles(errorsCollector, new ArrayList<>(Arrays.asList(files)));
 	}
 	
 	public List<CompilationUnit> parseFiles(List<File> files) {
@@ -103,7 +104,7 @@ public class ASTParserFacade {
 	}
 	
 	public List<CompilationUnit> parseFiles(File... files) {
-		return parseFiles(null, files);
+		return parseFiles(null, new ArrayList<>(Arrays.asList(files)));
 	}
 	
 	private ASTParser createParser() {

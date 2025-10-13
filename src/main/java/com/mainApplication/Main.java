@@ -11,7 +11,7 @@ public class Main {
 		if (System.getProperty("log.mode") == null)
 			System.setProperty("log.mode", "DETAILED");
 		if (System.getProperty("log.level") == null)
-			System.setProperty("log.level", "debug");
+			System.setProperty("log.level", "info");
 		
 		logger = LoggerFactory.getLogger(Main.class);
 	}
