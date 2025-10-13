@@ -65,10 +65,6 @@ public class AnalysisResult {
 	
 	public int getTotalClassesCount() {return getClasses().size();}
 	
-	public int getTotalMethodsCount() {return project.getMethods().size();}
-	
-	public int getTotalFieldsCount() {return project.getFields().size();}
-	
 	@Override
 	public String toString() {
 		return ("AnalysisResult{"

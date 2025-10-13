@@ -25,39 +25,62 @@ public abstract class NodeInfo {
 	public String getName() {return name;}
 
 	public void setName(String name) {
+		String old = this.name;
 		this.name = name;
+		logger.debug("Change value of 'name': %s -> %s".formatted(old,this.name));
 	}
 
 	public NodeVisibility getVisibility() {return visibility;}
 
 	public void setVisibility(NodeVisibility visibility) {
+		NodeVisibility oldv = this.visibility;
 		this.visibility = visibility;
+		logger.debug("Change value of 'visibility': %s -> %s".formatted(oldv,this.visibility));
+		boolean oldp = this.isPublic;
 		this.isPublic = (visibility == NodeVisibility.PUBLIC);
+		logger.debug("Change value of 'isPublic': %s -> %s".formatted(oldp,this.isPublic));
 	}
 
 	public boolean isStatic() {return isStatic;}
 
 	public void setStatic(boolean isStatic) {
+		boolean old = this.isStatic;
 		this.isStatic = isStatic;
+		logger.debug("Change value of 'isStatic': %s -> %s".formatted(old,this.isStatic));
 	}
 
 	public boolean isAbstract() {return isAbstract;}
 
 	public void setAbstract(boolean isAbstract) {
+		boolean old = this.isAbstract;
 		this.isAbstract = isAbstract;
+		logger.debug("Change value of 'isAbstract': %s -> %s".formatted(old,this.isAbstract));
 	}
 
 	public boolean isFinal() {return isFinal;}
 
 	public void setFinal(boolean isFinal) {
+		boolean old = this.isFinal;
 		this.isFinal = isFinal;
+		logger.debug("Change value of 'isFinal': %s -> %s".formatted(old,this.isFinal));
 	}
 	
 	public boolean isPublic() {return this.isPublic;}
 	
 	public void setPublic(boolean isPublic) {
+		if (!isPublic) {
+			if (this.visibility == NodeVisibility.PUBLIC) {
+				logger.error("Cannot change 'isPublic' to false while visibility is set to PUBLIC");
+				return;
+			}
+		} else {
+			NodeVisibility oldv = this.visibility;
+			this.visibility = NodeVisibility.PUBLIC;
+			logger.debug("Change value of 'visibility': %s -> %s".formatted(oldv,this.visibility));
+		}
+		boolean oldp = this.isPublic;
 		this.isPublic = isPublic;
-		if (isPublic) this.visibility = NodeVisibility.PUBLIC;
+		logger.debug("Change value of 'isPublic': %s -> %s".formatted(oldp,this.isPublic));
 	}
 	
 	public List<NodeModifiers> getModifiers() {return this.modifiers;}

@@ -241,7 +241,7 @@ public class ProjectExplorer {
 		logger.debug("Added file on '"+packageName+"': "+javaFile.getName());
 	}
 
-	private String inferPackageName(Path filePath, Path rootPath) {
+	public String inferPackageName(Path filePath, Path rootPath) {
 		try {
 			Path relativePath = rootPath.relativize(filePath);
 			Path parentPath = relativePath.getParent();
@@ -257,11 +257,11 @@ public class ProjectExplorer {
 		}
 	}
 	
-	private String inferPackageName(Path filePath) {
+	protected String inferPackageName(Path filePath) {
 		return inferPackageName(filePath, currentProjectRootPath);
 	}
 
-	private Path findSourceRoot(Path rootPath) {
+	public Path findSourceRoot(Path rootPath) {
 		Path mavenSrc = rootPath.resolve("src/main/java");
 		if (Files.exists(mavenSrc) && Files.isDirectory(mavenSrc)) {
 			return mavenSrc;
@@ -275,11 +275,11 @@ public class ProjectExplorer {
 		return rootPath;
 	}
 
-	private boolean isJavaFile(Path filePath) {
+	public boolean isJavaFile(Path filePath) {
 		return filePath.toString().endsWith(".java");
 	}
 
-	private boolean isExcluded(Path filePath) {
+	public boolean isExcluded(Path filePath) {
 		String fileName = filePath.getFileName().toString();
 
 		for (String pattern : excludedPatterns) {

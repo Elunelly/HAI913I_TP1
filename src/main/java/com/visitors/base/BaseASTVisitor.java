@@ -23,6 +23,7 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 			return this.result;
 		}
 		try {
+			logger.trace("Visiting and extracting: "+compilationUnit.getPackage());
 			this.result = new VisitorResult(getVisitorName());
 			compilationUnit.accept(this);
 			afterVisit();
@@ -30,10 +31,6 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 			this.result.setError("Error occured during visit: "+e.getMessage());
 		}
 		return this.result;
-	}
-	
-	public boolean visit(CompilationUnit compilationUnit) {
-		return visitAndExtract(compilationUnit).isSuccessful();
 	}
 	
 	protected void afterVisit() {}

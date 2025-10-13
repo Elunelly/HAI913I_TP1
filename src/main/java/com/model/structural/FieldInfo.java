@@ -16,7 +16,9 @@ public class FieldInfo extends NodeInfo {
 	public String getType() {return this.type;}
 	
 	public void setType(String type) {
+		String old = this.type;
 		this.type = type;
+		logger.debug("Change value of 'type': %s -> %s".formatted(old,this.type));
 	}
 	
 	public boolean isConstant() {

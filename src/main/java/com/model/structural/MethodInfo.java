@@ -22,13 +22,17 @@ public class MethodInfo extends NodeInfo {
     public String getReturnType() {return this.returnType;}
 
 	public void setReturnType(String returnType) {
+		String old = this.returnType;
 		this.returnType = returnType;
+		logger.debug("Change value of 'returnType': %s -> %s".formatted(old,this.returnType));
 	}
 
 	public boolean isConstructor() {return this.isConstructor;}
 
 	public void setIsConstructor(boolean isConstructor) {
+		boolean old = this.isConstructor;
 		this.isConstructor = isConstructor;
+		logger.debug("Change value of 'isConstructor': %s -> %s".formatted(old,this.isConstructor));
 	}
 
 	public List<String> getParameters() {return Collections.unmodifiableList(this.parameters);}
@@ -36,9 +40,8 @@ public class MethodInfo extends NodeInfo {
 	public List<String> copyParameters() {return new ArrayList<>(this.parameters);}
 
 	public void addParameter(String parameter) {
-		if (parameter!=null &&
-			!parameter.isBlank() &&
-			!this.parameters.contains(parameter)) this.parameters.add(parameter);
+		if (parameter!=null && !parameter.isBlank() && !this.parameters.contains(parameter) &&	this.parameters.add(parameter))
+			logger.debug("Parameter added: %s".formatted(parameter));
 	}
 	
 	@Override

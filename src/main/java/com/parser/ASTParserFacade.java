@@ -29,14 +29,22 @@ public class ASTParserFacade {
 	public ASTParserFacade(ParseConfiguration config) {
 		this.config = config;
 		this.parser = createParser();
+		logger.trace("Initiate a new parser: "+config);
 	}
 	
 	public CompilationUnit parseString(String javaString, String unitName) {
-		if (javaString == null || javaString.isBlank()) throw new IllegalArgumentException("Java code cannot be empty or null");
+		if (javaString == null || javaString.isBlank()) {
+			IllegalArgumentException error = new IllegalArgumentException("Java code cannot be empty or null");
+			logger.error(error.getLocalizedMessage());
+			throw error;
+		}
+		unitName = unitName!=null ? unitName : this.config.getDefaultUnitName();
 		this.parser.setSource(javaString.toCharArray());
-		this.parser.setUnitName(unitName!=null ? unitName : this.config.getDefaultUnitName());
+		this.parser.setUnitName(unitName);
 		
 		CompilationUnit compilationUnit = (CompilationUnit) this.parser.createAST(null);
+		if (compilationUnit!=null)
+			logger.debug("Successfully created the CompilationUnit '{}': {}",unitName,compilationUnit);
 		return compilationUnit;
 	}
 	
@@ -45,13 +53,24 @@ public class ASTParserFacade {
 	}
 	
 	public CompilationUnit parseFile(File javaFile) {
-		if (javaFile == null || !javaFile.exists()) throw new IllegalArgumentException("Java file "+javaFile+" does not exist");
-		if (!javaFile.getName().endsWith(".java")) throw new IllegalArgumentException(javaFile+" is not a Java file");
+		if (javaFile == null || !javaFile.exists()) {
+			IllegalArgumentException error = new IllegalArgumentException("Java file "+javaFile+" does not exist");
+			logger.error(error.getLocalizedMessage());
+			throw error;
+		}
+		if (!javaFile.getName().endsWith(".java")) {
+			IllegalArgumentException error = new IllegalArgumentException(javaFile+" is not a Java file");
+			logger.error(error.getLocalizedMessage());
+			throw error;
+		}
 		try {
 			String content = Files.readString(javaFile.toPath());
+			logger.debug("Successfully read the file: {}",javaFile.getName());
 			return parseString(content, javaFile.getName());
 		} catch (IOException e) {
-			throw new RuntimeException("Error reading file "+javaFile.getName(), e);
+			RuntimeException error = new RuntimeException("Error reading file "+javaFile.getName(), e);
+			logger.error(error.getLocalizedMessage());
+			throw error;
 		}
 	}
 	
@@ -62,9 +81,11 @@ public class ASTParserFacade {
 				CompilationUnit cu = parseFile(file);
 				result.add(cu);
 			} catch (IllegalArgumentException e) {
+				logger.error(e.getLocalizedMessage());
 				if (errorsCollector != null)
 					errorsCollector.add(new ExplorationError(file.toPath(), e.getMessage(), e));
 			} catch (RuntimeException e) {
+				logger.error(e.getLocalizedMessage());
 				if (errorsCollector != null)
 					errorsCollector.add(new ParsingFileError(file, e.getMessage(), e));
 			}
@@ -88,7 +109,7 @@ public class ASTParserFacade {
 	private ASTParser createParser() {
 		ASTParser parser = ASTParser.newParser(this.config.getCurrentJLS());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setResolveBindings(false); // See ParseConfiguration.getResolveBindings() later on!!
+		parser.setResolveBindings(false);
 		return parser;
 	}
 	

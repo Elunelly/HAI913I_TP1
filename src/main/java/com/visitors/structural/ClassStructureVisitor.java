@@ -17,6 +17,7 @@ import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
 import com.visitors.base.BaseASTVisitor;
+import com.visitors.base.VisitorResult;
 
 public class ClassStructureVisitor extends BaseASTVisitor {
 	
@@ -33,6 +34,15 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		super();
 	}
 	
+	public void reset() {
+		this.classes.clear();
+		logger.debug("Cleared all classes");
+		this.currentClass = null;
+		this.currentPackage = "";
+		logger.debug("Reset currentClass and currentPackage value");
+		this.result = new VisitorResult(getVisitorName());
+	}
+	
 	public List<ClassInfo> getClasses() {return Collections.unmodifiableList(classes);}
 	
 	public List<ClassInfo> copyClasses() {return new ArrayList<>(classes);}
@@ -45,6 +55,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	@Override
 	public boolean visit(PackageDeclaration node) {
 		this.currentPackage = node.getName().getFullyQualifiedName();
+		logger.trace("Visited Package: "+currentPackage);
 		return true;
 	}
 	
@@ -60,6 +71,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 			currentClass.addInterface(interfaceType.toString());
 		}
 		currentClass.setDefinedModifiers(node.getModifiers());
+		logger.trace("Visited Class: "+currentClass);
 		
 		this.classes.add(currentClass);
 		return TypeExploreChildren;
@@ -81,6 +93,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
         if (!method.isConstructor() && node.getReturnType2()!=null) {
             method.setReturnType(node.getReturnType2().toString());
         }
+		logger.trace("Visited Method: "+method);
         
         this.currentClass.addMethod(method);
 		return MethodExploreChildren;
@@ -98,12 +111,19 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 				field.setType(fieldType);
 
 				field.setDefinedModifiers(node.getModifiers());
+				logger.trace("Visited Field: "+field);
 				
 				this.currentClass.addField(field);
 			}
 		}
 		
 		return FieldExploreChildren;
+	}
+	
+	@Override
+	protected void afterVisit() {
+	    this.result.addData("classes", new ArrayList<>(this.classes));
+	    logger.debug("Extracted %d classes".formatted(classes.size()));
 	}
 	
 	@Override

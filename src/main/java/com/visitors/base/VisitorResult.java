@@ -20,9 +20,13 @@ public class VisitorResult {
 		this.visitorName = visitorName;
 	}
 	
-	public boolean addData(String key, Object value) {
-		this.data.put(key, value);
-		return this.data.get(key).equals(value);
+	public void addData(String key, Object value) {
+		Object old = data.get(key);
+		data.put(key, value);
+		if (old==null)
+			logger.debug("Added entry: '"+key+"'="+value);
+		else
+			logger.debug("Change value of '%s': %s -> %s".formatted(key,old,value));
 	}
 	
 	public Object getDataBy(String key) {
@@ -44,8 +48,12 @@ public class VisitorResult {
 	public Map<String,Object> copyData() {return new HashMap<>(this.data);}
 	
 	public void setError(String errorMessage) {
-		this.isSuccess = false;
+		this.isSuccess = errorMessage.isEmpty();
 		this.errorMessage = errorMessage;
+		if (!isSuccess)
+			logger.error(errorMessage);
+		else
+			logger.debug("Reset on no-error");
 	}
 	
 	public String getVisitorName() {return this.visitorName;}

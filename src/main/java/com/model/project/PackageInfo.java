@@ -33,7 +33,9 @@ public class PackageInfo {
 	public PackageInfo getParentPackage() {return this.parentPackage;}
 	
 	public void setParentPackage(PackageInfo parentPackage) {
+		PackageInfo old = this.parentPackage;
 		this.parentPackage = parentPackage;
+		logger.debug("Change value of 'parentPackage': %s -> %s".formatted(old,this.parentPackage));
 	}
 	
 	public List<PackageInfo> getSubPackages() {
@@ -45,8 +47,8 @@ public class PackageInfo {
 	}
 	
 	public void addSubPackage(PackageInfo subpackage) {
-		if (subpackage!=null)
-			this.subPackages.putIfAbsent(subpackage.getName(), subpackage);
+		if (subpackage!=null && this.subPackages.putIfAbsent(subpackage.getName(), subpackage)==null)
+			logger.debug("Sub-package added: %s".formatted(subpackage));
 	}
 	
 	public boolean hasSubPackages() {
@@ -65,9 +67,8 @@ public class PackageInfo {
 	}
 	
 	public void addClass(ClassInfo classInfo) {
-		if (classInfo!=null && !this.classes.contains(classInfo)) {
-			this.classes.add(classInfo);
-		}
+		if (classInfo!=null && !this.classes.contains(classInfo) && this.classes.add(classInfo))
+			logger.debug("Class added: %s".formatted(classInfo));
 	}
 	
 	public boolean hasClasses() {

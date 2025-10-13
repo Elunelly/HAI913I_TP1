@@ -13,10 +13,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.core.ASTProcessor;
 import com.model.structural.ClassInfo;
-import com.model.structural.FieldInfo;
-import com.model.structural.MethodInfo;
 
 public class JavaProject {
 	
@@ -26,8 +23,6 @@ public class JavaProject {
 	private final Path rootPath;
 	private final Map<String,PackageInfo> packages = new HashMap<>();
 	private final List<ClassInfo> classes = new ArrayList<>();
-	private final List<MethodInfo> methods = new ArrayList<>();
-	private final List<FieldInfo> fields = new ArrayList<>();
 	private final Map<String,ClassInfo> classIndex = new HashMap<>();
 	private final List<CompilationUnit> compilationUnits = new ArrayList<>();
 	
@@ -134,8 +129,6 @@ public class JavaProject {
 			logger.debug("Added classInfo: "+classInfo.getSignature());
 			
 			this.classIndex.put(classInfo.getName(), classInfo);
-			addAllMethods(classInfo.copyMethods());
-			addAllFields(classInfo.copyFields());
 			
 			String packageName = classInfo.getPackageName();
 			if (packageName!=null && this.packages.containsKey(packageName))
@@ -161,44 +154,6 @@ public class JavaProject {
 		return this.classes.stream()
 				.filter(c -> c.getPackageName().equalsIgnoreCase(name))
 				.collect(Collectors.toUnmodifiableList());
-	}
-	
-	public List<MethodInfo> getMethods() {return Collections.unmodifiableList(methods);}
-	
-	public List<MethodInfo> copyMethods() {return new ArrayList<>(methods);}
-	
-	public void addMethod(MethodInfo methodInfo) {
-		if (methodInfo != null && !methods.contains(methodInfo) && methods.add(methodInfo))
-			logger.debug("Added MethodInfo: "+methodInfo.getSignature());
-	}
-	
-	public void addAllMethods(MethodInfo... methodInfos) {
-		for (MethodInfo methodInfo : methodInfos) {
-			addMethod(methodInfo);
-		}
-	}
-	
-	public void addAllMethods(List<MethodInfo> methodInfos) {
-		addAllMethods((MethodInfo[]) methodInfos.toArray());
-	}
-	
-	public List<FieldInfo> getFields() {return Collections.unmodifiableList(fields);}
-	
-	public List<FieldInfo> copyFields() {return new ArrayList<>(fields);}
-	
-	public void addField(FieldInfo fieldInfo) {
-		if (fieldInfo != null && !fields.contains(fieldInfo) && fields.add(fieldInfo))
-			logger.debug("Added FieldInfo: "+fieldInfo.getSignature());
-	}
-	
-	public void addAllFields(FieldInfo... fieldInfos) {
-		for (FieldInfo fieldInfo : fieldInfos) {
-			addField(fieldInfo);
-		}
-	}
-	
-	public void addAllFields(List<FieldInfo> fieldInfos) {
-		addAllFields((FieldInfo[]) fieldInfos.toArray());
 	}
 	
 	
@@ -233,11 +188,9 @@ public class JavaProject {
 	public void clear() {
 		this.packages.clear();
 		this.classes.clear();
-		this.methods.clear();
-		this.fields.clear();
 		this.classIndex.clear();
 		this.compilationUnits.clear();
-		logger.debug("Cleared JavaProject (packages, classes, methods, fields, compilationUnits): "+this.name);
+		logger.debug("Cleared JavaProject (packages, classes, compilationUnits): "+this.name);
 	}
 	
 	@Override
@@ -247,10 +200,8 @@ public class JavaProject {
         		+ "root=%s, "
         		+ "packages=%d, "
         		+ "classes=%d, "
-        		+ "methods=%d, "
-        		+ "fields=%d, "
         		+ "compilationUnits=%d}")
-        		.formatted(name, rootPath, packages.size(), classes.size(), methods.size(), fields.size(), compilationUnits.size());
+        		.formatted(name, rootPath, packages.size(), classes.size(), compilationUnits.size());
     }
 
 }

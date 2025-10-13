@@ -25,19 +25,25 @@ public class ClassInfo extends NodeInfo {
 	public String getPackageName() {return this.packageName;}
 
 	public void setPackageName(String packageName) {
+		String old = this.packageName;
 		this.packageName = packageName!=null ? packageName : "";
+		logger.debug("Change value of 'packageName': %s -> %s".formatted(old,this.packageName));
 	}
 
 	public boolean isInterface() {return this.isInterface;}
 
 	public void setInterface(boolean isInterface) {
+		boolean old = this.isInterface;
 		this.isInterface = isInterface;
+		logger.debug("Change value of 'isInterface': %s -> %s".formatted(old,this.isInterface));
 	}
 	
 	public String getSuperClass() {return this.superClass;}
 	
 	public void setSuperClass(String superClass) {
+		String old = this.superClass;
 		this.superClass = superClass;
+		logger.debug("Change value of 'superClass': %s -> %s".formatted(old,this.superClass));
 	}
 
 	protected List<String> getInterfaces() {return Collections.unmodifiableList(this.interfaces);}
@@ -45,10 +51,8 @@ public class ClassInfo extends NodeInfo {
 	public List<String> copyInterfaces() {return new ArrayList<>(this.interfaces);}
 
 	public void addInterface(String interfaceName) {
-		if (interfaceName!=null &&
-			!interfaceName.isBlank() &&
-			!this.interfaces.contains(interfaceName))
-			this.interfaces.add(interfaceName);
+		if (interfaceName!=null && !interfaceName.isBlank() && !this.interfaces.contains(interfaceName) && this.interfaces.add(interfaceName))
+				logger.debug("Interface added: %s".formatted(interfaceName));
 	}
 
 	protected List<MethodInfo> getMethods() {return Collections.unmodifiableList(this.methods);}
@@ -56,7 +60,8 @@ public class ClassInfo extends NodeInfo {
 	public List<MethodInfo> copyMethods() {return new ArrayList<>(this.methods);}
 
 	public void addMethod(MethodInfo method) {
-		if (method!=null && !this.methods.contains(method)) this.methods.add(method);
+		if (method!=null && !this.methods.contains(method) && this.methods.add(method))
+			logger.debug("Method added: %s".formatted(method));
 	}
 
 	protected List<FieldInfo> getFields() {return Collections.unmodifiableList(this.fields);}
@@ -64,7 +69,8 @@ public class ClassInfo extends NodeInfo {
 	public List<FieldInfo> copyFields() {return new ArrayList<>(this.fields);}
 
 	public void addField(FieldInfo field) {
-		if (field!=null && !this.fields.contains(field)) this.fields.add(field);
+		if (field!=null && !this.fields.contains(field) && this.fields.add(field))
+			logger.debug("Field added: %s".formatted(field));
 	}
 	
 	public String getQualifiedName() {
@@ -139,6 +145,7 @@ public class ClassInfo extends NodeInfo {
 				+ "visibility=%s, "
 				+ "name=%s, "
 				+ "isInterface=%s, "
+				+ "superClass=%s, "
 				+ "isStatic=%s, "
 				+ "isAbstract=%s, "
 				+ "isFinal=%s, "
@@ -149,6 +156,7 @@ public class ClassInfo extends NodeInfo {
 					this.getVisibility().name(),
 					this.getName(),
 					String.valueOf(isInterface),
+					superClass,
 					String.valueOf(this.isStatic()),
 					String.valueOf(this.isAbstract()),
 					String.valueOf(this.isFinal()),

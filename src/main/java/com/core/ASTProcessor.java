@@ -44,6 +44,12 @@ public class ASTProcessor {
 		setCalculator(calculator);
 	}
 	
+	public void reset() {
+		clearVisitors();
+		clearExtractors();
+		clearErrors();
+	}
+	
 	public List<BaseASTVisitor> getVisitors() {return Collections.unmodifiableList(visitors);}
 	
 	public List<BaseASTVisitor> copyVisitors() {return new ArrayList<>(visitors);}
@@ -130,14 +136,6 @@ public class ASTProcessor {
 		ParseConfiguration config = parserFacade.getConfig();
 		
 		// STEP 0: Configuration
-		/*
-		 * int keyPadding = 18;
-		logger.info((
-			"STARTING PROJECT ANALYSIS"+
-			"\n  -» %-"+keyPadding+"s: %s"+
-			"\n  -» %-"+keyPadding+"s: %s"
-			).formatted("Project Name",projectName,"Starting at", rootPath));
-			*/
 		logger.info(
 			TableUI.titledTable(
 				"STARTING PROJECT ANALYSIS",
@@ -196,6 +194,7 @@ public class ASTProcessor {
 		
 		// STEP 5: Metric Extraction
 		logger.info("[5/5] Extracting all metrics...");
+		calculateMetrics(result);
 		logger.info("End of calculations");
 		
 		return result;
