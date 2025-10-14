@@ -41,7 +41,7 @@ public class ExplorationError extends ASTError {
 
 	@Override
 	public String toString() {
-		return String.format("ExplorationError at %s: %s", path, message);
+		return String.format(this.getClass().getSimpleName()+" at %s: %s", path, message);
 	}
 	
 }

@@ -48,7 +48,7 @@ public abstract class ASTError extends Exception {
 	
 	@Override
 	public String toString() {
-		return String.format("Error caused by %s: %s (cause=%s)", getContext(), getMessage(), getCause());
+		return String.format(this.getClass().getSimpleName()+" caused by %s: %s (cause=%s)", getContext(), getMessage(), getCause());
 	}
 
 }

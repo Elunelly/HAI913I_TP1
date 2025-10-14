@@ -12,12 +12,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.calculators.StatisticsCalculator;
+import com.config.ParseConfiguration;
 import com.exceptions.ASTError;
 import com.extractors.MetricExtractor;
-import com.model.project.JavaProject;
+import com.model.project.ProjectInfo;
 import com.model.structural.ClassInfo;
 import com.parser.ASTParserFacade;
-import com.parser.ParseConfiguration;
 import com.utils.table.TableUI;
 import com.visitors.base.BaseASTVisitor;
 import com.visitors.base.VisitorResult;
@@ -170,7 +170,7 @@ public class ASTProcessor {
 		}
 		
 		// STEP 2: Building JavaProject
-		JavaProject project = null;
+		ProjectInfo project = null;
 		try {
 			logger.info("[2/5] Building project hierarchy...");
 			project = explorer.buildJavaProject(projectName, rootPath, javaFiles);
@@ -206,7 +206,7 @@ public class ASTProcessor {
 		return processProject(projectName, path);
 	}
 	
-	private void executeVisitors(JavaProject project, List<CompilationUnit> compilationUnits) {
+	private void executeVisitors(ProjectInfo project, List<CompilationUnit> compilationUnits) {
         if (visitors.isEmpty()) {
         	logger.warn("No visitors registered, using default ClassStructureVisitor");
             ClassStructureVisitor defaultVisitor = new ClassStructureVisitor();
@@ -224,7 +224,7 @@ public class ASTProcessor {
 	}
 	
     @SuppressWarnings("unchecked")
-	private void executeVisitor(BaseASTVisitor visitor, JavaProject project, List<CompilationUnit> compilationUnits) {
+	private void executeVisitor(BaseASTVisitor visitor, ProjectInfo project, List<CompilationUnit> compilationUnits) {
 		try {
 			logger.debug("Executing visitor: "+visitor.getVisitorName());
 			for (CompilationUnit cu : compilationUnits) {
@@ -249,7 +249,7 @@ public class ASTProcessor {
     
     @Override
     public String toString() {
-    	return ("ASTProcessor{"
+    	return (this.getClass().getSimpleName()+"{"
     			+ "explorer=%s, "
     			+ "parser=%s, "
     			+ "calculator=%s, "

@@ -8,7 +8,9 @@ import org.eclipse.jdt.core.dom.Modifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class NodeInfo {
+import com.model.interfaces.ModelInfo;
+
+public abstract class NodeInfo implements ModelInfo {
 	
 	private static final Logger logger = LoggerFactory.getLogger(NodeInfo.class);
 	
@@ -133,7 +135,7 @@ public abstract class NodeInfo {
 
 	@Override
 	public String toString() {
-		return ("Class{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "visibility=%s, "
 				+ "name=%s, "
 				+ "isStatic=%s, "

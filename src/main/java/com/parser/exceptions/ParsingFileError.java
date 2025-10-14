@@ -41,7 +41,7 @@ public class ParsingFileError extends ASTError {
 
 	@Override
 	public String toString() {
-		return String.format("ParsingFileError on %s: %s", file.getName(), message);
+		return String.format(this.getClass().getSimpleName()+" on %s: %s", file.getName(), message);
 	}
 
 }

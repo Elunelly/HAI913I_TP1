@@ -1,4 +1,4 @@
-package com.parser;
+package com.config;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
@@ -281,7 +281,7 @@ public class ParseConfiguration {
 	
 	@Override
 	public String toString() {
-		return ("ParseConfiguration{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "JREVersion=%s, "
 				+ "resolveBindings=%s, "
 				+ "defaultUnitName=%s, "

@@ -12,6 +12,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.config.ParseConfiguration;
 import com.core.exceptions.ExplorationError;
 import com.exceptions.ASTError;
 import com.parser.exceptions.ParsingFileError;
@@ -124,7 +125,7 @@ public class ASTParserFacade {
 	
 	@Override
 	public String toString() {
-		return ("ASTParserFacade{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "config=%s, "
 				+ "parser=%s}")
 				.formatted(config, parser);

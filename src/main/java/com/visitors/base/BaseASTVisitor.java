@@ -39,7 +39,7 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	
 	@Override
 	public String toString() {
-		return ("BaseASTVisitor{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "result=%s}")
 				.formatted(getVisitorName(), result);

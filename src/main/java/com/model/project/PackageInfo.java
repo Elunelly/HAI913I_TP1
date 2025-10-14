@@ -10,9 +10,11 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.interfaces.HasClasses;
+import com.model.interfaces.ModelInfo;
 import com.model.structural.ClassInfo;
 
-public class PackageInfo {
+public class PackageInfo implements ModelInfo, HasClasses {
 	
 	private static final Logger logger = LoggerFactory.getLogger(PackageInfo.class);
 	
@@ -38,9 +40,7 @@ public class PackageInfo {
 		logger.debug("Change value of 'parentPackage': %s -> %s".formatted(old,this.parentPackage));
 	}
 	
-	public List<PackageInfo> getSubPackages() {
-		return Collections.unmodifiableList(new ArrayList<>(this.subPackages.values()));
-	}
+	public List<PackageInfo> getSubPackages() {return Collections.unmodifiableList(new ArrayList<>(this.subPackages.values()));}
 	
 	public PackageInfo getSubPackage(String name) {
 		return this.subPackages.get(name);
@@ -51,33 +51,16 @@ public class PackageInfo {
 			logger.debug("Sub-package added: %s".formatted(subpackage));
 	}
 	
+	public boolean hasSubPackage(String name) {
+		return this.subPackages.containsKey(name);
+	}
+	
 	public boolean hasSubPackages() {
 		return !this.subPackages.isEmpty();
 	}
-	
-	public List<ClassInfo> getClasses() {return Collections.unmodifiableList(this.classes);}
-	
-	public List<ClassInfo> copyClasses() {return new ArrayList<>(this.classes);}
-	
-	public ClassInfo getClass(String name) {
-		for(ClassInfo classInfo : this.classes) {
-			if (name.equalsIgnoreCase(classInfo.getName())) return classInfo;
-		}
-		return null;
-	}
-	
-	public void addClass(ClassInfo classInfo) {
-		if (classInfo!=null && !this.classes.contains(classInfo) && this.classes.add(classInfo))
-			logger.debug("Class added: %s".formatted(classInfo));
-	}
-	
-	public boolean hasClasses() {
-		return !this.classes.isEmpty();
-	}
-	
-	public boolean hasClass(String name) {
-		return getClass(name) != null;
-	}
+
+	@Override
+	public List<ClassInfo> classes() {return classes;}
 	
 	public boolean isRoot() {
 		return this.parentPackage==null;
@@ -85,6 +68,14 @@ public class PackageInfo {
 	
 	public boolean hasName() {
 		return !this.name.isEmpty();
+	}
+	
+	public boolean isChildOf(PackageInfo that) {
+		return this.name.startsWith(that.name);
+	}
+	
+	public boolean isParentOf(PackageInfo that) {
+		return that.isChildOf(this);
 	}
 	
 	public int getDepth() {
@@ -135,7 +126,7 @@ public class PackageInfo {
 	
 	@Override
 	public String toString() {
-		return ("Package{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "parent=%s, "
 				+ "subPackages=%d, "

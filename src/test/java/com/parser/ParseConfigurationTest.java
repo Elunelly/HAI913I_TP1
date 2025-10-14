@@ -4,6 +4,8 @@ import org.eclipse.jdt.core.dom.AST;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.DisplayName;
 
+import com.config.ParseConfiguration;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**

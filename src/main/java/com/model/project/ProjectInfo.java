@@ -13,11 +13,13 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.interfaces.HasClasses;
+import com.model.interfaces.ModelInfo;
 import com.model.structural.ClassInfo;
 
-public class JavaProject {
+public class ProjectInfo implements ModelInfo, HasClasses {
 	
-	private static final Logger logger = LoggerFactory.getLogger(JavaProject.class);
+	private static final Logger logger = LoggerFactory.getLogger(ProjectInfo.class);
 	
 	private final String name;
 	private final Path rootPath;
@@ -26,7 +28,7 @@ public class JavaProject {
 	private final Map<String,ClassInfo> classIndex = new HashMap<>();
 	private final List<CompilationUnit> compilationUnits = new ArrayList<>();
 	
-	public JavaProject(String name, Path rootPath) {
+	public ProjectInfo(String name, Path rootPath) {
 		if (rootPath==null)
 			rootPath = Path.of("");
 		if (name==null || name.isBlank())
@@ -37,23 +39,23 @@ public class JavaProject {
 		logger.debug("Setting project root:"+this.rootPath);
 	}
 	
-	public JavaProject(String name) {
+	public ProjectInfo(String name) {
 		this(name, null);
 	}
 	
-	public JavaProject(Path rootPath) {
+	public ProjectInfo(Path rootPath) {
 		this(null, rootPath);
 	}
 	
-	public JavaProject() {
+	public ProjectInfo() {
 		this(null, null);
 	}
 	
 	public String getName() {return this.name;}
 	
+	public String getFullName() {return this.rootPath.toString();}
+	
 	public Path getRootPath() {return this.rootPath;}
-	
-	
 	
 	public Map<String,PackageInfo> getMappedPackages() {return Collections.unmodifiableMap(this.packages);}
 	
@@ -118,37 +120,8 @@ public class JavaProject {
 			}
 		}
 	}
-	
-	public List<ClassInfo> getClasses() {return Collections.unmodifiableList(this.classes);}
-	
-	public List<ClassInfo> copyClasses() {return new ArrayList<>(this.classes);}
-	
-	public void addClass(ClassInfo classInfo) {
-		if (classInfo!=null && !this.classes.contains(classInfo)) {
-			this.classes.add(classInfo);
-			logger.debug("Added classInfo: "+classInfo.getSignature());
-			
-			this.classIndex.put(classInfo.getName(), classInfo);
-			
-			String packageName = classInfo.getPackageName();
-			if (packageName!=null && this.packages.containsKey(packageName))
-				this.packages.get(packageName).addClass(classInfo);
-		}
-	}
-	
-	public void addAllClasses(ClassInfo...classInfos) {
-		for (ClassInfo classInfo : classInfos) {
-			addClass(classInfo);
-		}
-	}
-	
-	public void addAllClasses(List<ClassInfo> classInfos) {
-		addAllClasses((ClassInfo[]) classInfos.toArray());
-	}
-	
-	public ClassInfo getClass(String name) {
-		return this.classIndex.get(name);
-	}
+    
+    public List<ClassInfo> classes() {return classes;}
 	
 	public List<ClassInfo> getClassesByPackage(String name) {
 		return this.classes.stream()
@@ -197,7 +170,7 @@ public class JavaProject {
 	
 	@Override
     public String toString() {
-        return ("JavaProject{"
+        return (this.getClass().getSimpleName()+"{"
         		+ "name=%s, "
         		+ "root=%s, "
         		+ "packages=%d, "

@@ -9,18 +9,18 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.model.project.JavaProject;
+import com.model.project.ProjectInfo;
 import com.model.structural.ClassInfo;
 
 public class AnalysisResult {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AnalysisResult.class);
 	
-	private final JavaProject project;
+	private final ProjectInfo project;
 	private final Map<String,Object> metrics = new HashMap<>();
 	//private final List<MethodCall> methodCalls = new ArrayList<>();
 	
-	public AnalysisResult(JavaProject project) {
+	public AnalysisResult(ProjectInfo project) {
 		this.project = project;
 	}
 	
@@ -55,7 +55,7 @@ public class AnalysisResult {
 		return !metrics.isEmpty();
 	}
 	
-	public JavaProject getProject() {
+	public ProjectInfo getProject() {
 		return this.project;
 	}
 	
@@ -71,7 +71,7 @@ public class AnalysisResult {
 	
 	@Override
 	public String toString() {
-		return ("AnalysisResult{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "projectName=%s, "
 				+ "metrics=%d, "
 				+ "classes=%d, "

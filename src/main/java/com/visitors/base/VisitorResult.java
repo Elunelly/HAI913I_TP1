@@ -14,7 +14,7 @@ public class VisitorResult {
 	private final String visitorName;
 	private final Map<String,Object> data = new HashMap<>();
 	private boolean isSuccess = true;
-	private String errorMessage = "";
+	private String errorMessage;
 	
 	public VisitorResult(String visitorName) {
 		this.visitorName = visitorName;
@@ -48,7 +48,7 @@ public class VisitorResult {
 	public Map<String,Object> copyData() {return new HashMap<>(this.data);}
 	
 	public void setError(String errorMessage) {
-		this.isSuccess = errorMessage.isEmpty();
+		this.isSuccess = errorMessage==null || errorMessage.isEmpty();
 		this.errorMessage = errorMessage;
 		if (!isSuccess)
 			logger.error(errorMessage);
@@ -64,7 +64,7 @@ public class VisitorResult {
 	
 	@Override
 	public String toString() {
-		return ("VisitorResult{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "successful=%s, "
 				+ "data=%s}")

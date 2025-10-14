@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.core.ASTProcessor;
 import com.core.AnalysisResult;
-import com.model.project.JavaProject;
+import com.model.project.ProjectInfo;
 import com.model.project.PackageInfo;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
@@ -95,7 +95,7 @@ public class MainTemp {
         }
         
         // Default: analyze current project's source code
-        Path currentPath = Path.of("src/main/java");
+        Path currentPath = Path.of("/home/luna/Documents/java");
         if (currentPath.toFile().exists()) {
             return currentPath.toString();
         }
@@ -130,7 +130,7 @@ public class MainTemp {
      * @param result the analysis result to display
      */
     private static void displayResults(AnalysisResult result) {
-        JavaProject project = result.getProject();
+        ProjectInfo project = result.getProject();
         
         System.out.println("═══════════════════════════════════════════════════════");
         System.out.println("                   ANALYSIS SUMMARY");
@@ -159,7 +159,7 @@ public class MainTemp {
      * 
      * @param project the Java project to analyze
      */
-    private static void displayPackageBreakdown(JavaProject project) {
+    private static void displayPackageBreakdown(ProjectInfo project) {
         if (!project.hasPackages()) {
             System.out.println("No packages found.");
             return;

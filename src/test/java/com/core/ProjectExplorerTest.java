@@ -16,7 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import com.model.project.JavaProject;
+import com.model.project.ProjectInfo;
 
 /**
  * Simple tests for ProjectExplorer.
@@ -98,7 +98,7 @@ class ProjectExplorerTest {
         createJavaFile(exampleDir, "Helper.java");
         
         // When: Build project structure
-        JavaProject project = explorer.buildJavaProject("TestProject", tempDir);
+        ProjectInfo project = explorer.buildJavaProject("TestProject", tempDir);
         
         // Then: Should create project with packages
         assertNotNull(project);

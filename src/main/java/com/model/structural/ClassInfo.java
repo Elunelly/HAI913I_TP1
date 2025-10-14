@@ -7,7 +7,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ClassInfo extends NodeInfo {
+import com.model.interfaces.HasFields;
+import com.model.interfaces.HasMethods;
+
+public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ClassInfo.class);
 	
@@ -54,24 +57,10 @@ public class ClassInfo extends NodeInfo {
 		if (interfaceName!=null && !interfaceName.isBlank() && !this.interfaces.contains(interfaceName) && this.interfaces.add(interfaceName))
 				logger.debug("Interface added: %s".formatted(interfaceName));
 	}
-
-	public List<MethodInfo> getMethods() {return Collections.unmodifiableList(this.methods);}
 	
-	public List<MethodInfo> copyMethods() {return new ArrayList<>(this.methods);}
-
-	public void addMethod(MethodInfo method) {
-		if (method!=null && !this.methods.contains(method) && this.methods.add(method))
-			logger.debug("Method added: %s".formatted(method));
-	}
-
-	public List<FieldInfo> getFields() {return Collections.unmodifiableList(this.fields);}
+	public List<MethodInfo> methods() {return methods;}
 	
-	public List<FieldInfo> copyFields() {return new ArrayList<>(this.fields);}
-
-	public void addField(FieldInfo field) {
-		if (field!=null && !this.fields.contains(field) && this.fields.add(field))
-			logger.debug("Field added: %s".formatted(field));
-	}
+	public List<FieldInfo> fields() {return fields;}
 	
 	public String getQualifiedName() {
 		if (this.packageName.isBlank()) return getName();
@@ -141,7 +130,7 @@ public class ClassInfo extends NodeInfo {
 
 	@Override
 	public String toString() {
-		return ("Class{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "visibility=%s, "
 				+ "name=%s, "
 				+ "isInterface=%s, "

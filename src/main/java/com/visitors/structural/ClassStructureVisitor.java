@@ -128,7 +128,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public String toString() {
-		return ("ClassStructureVisitor{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "classes=%d, "
 				+ "result=%s}")

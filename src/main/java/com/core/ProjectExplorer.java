@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.core.exceptions.ExplorationError;
-import com.model.project.JavaProject;
+import com.model.project.ProjectInfo;
 import com.model.project.PackageInfo;
 import com.utils.table.TableUI;
 
@@ -203,12 +203,12 @@ public class ProjectExplorer {
 		return exploreDirectory(currentProjectRootPath);
 	}
 
-	public JavaProject buildJavaProject(String projectName, Path rootPath, List<File> javaFiles) throws IOException {
+	public ProjectInfo buildJavaProject(String projectName, Path rootPath, List<File> javaFiles) throws IOException {
 		if (javaFiles == null)
 			exploreDirectory(rootPath);
 		else
 			groupAllFilesByPackage(javaFiles);
-		JavaProject project = new JavaProject(projectName, currentProjectRootPath);
+		ProjectInfo project = new ProjectInfo(projectName, currentProjectRootPath);
 
 		for (Map.Entry<String, List<File>> entry : currentProjectGroupedFilesByPackage.entrySet()) {
 			String packageName = entry.getKey();
@@ -220,7 +220,7 @@ public class ProjectExplorer {
 		return project;
 	}
 	
-	public JavaProject buildJavaProject(String projectName, Path rootPath) throws IOException {
+	public ProjectInfo buildJavaProject(String projectName, Path rootPath) throws IOException {
 		return buildJavaProject(projectName, rootPath, null);
 	}
 	
@@ -331,7 +331,7 @@ public class ProjectExplorer {
 	
 	@Override
 	public String toString() {
-		return ("ProjectExplorer{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "excludedPatterns=%s, "
 				+ "excludedDirectories=%s, "
 				+ "maxDepth=%d}")

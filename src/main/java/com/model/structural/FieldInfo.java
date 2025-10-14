@@ -32,7 +32,7 @@ public class FieldInfo extends NodeInfo {
 
 	@Override
 	public String toString() {
-		return ("Class{"
+		return (this.getClass().getSimpleName()+"{"
 				+ "visibility=%s, "
 				+ "name=%s, "
 				+ "type=%s, "
