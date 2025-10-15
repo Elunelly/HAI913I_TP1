@@ -7,6 +7,7 @@ import com.model.structural.MethodInfo;
 
 public class MethodMetrics extends NodeMetrics<MethodInfo> {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(MethodMetrics.class);
 	
 	private int totalParameters;

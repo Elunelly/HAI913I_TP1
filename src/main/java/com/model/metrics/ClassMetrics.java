@@ -9,6 +9,7 @@ import com.utils.MetricsUtils;
 
 public class ClassMetrics extends NodeMetrics<ClassInfo> {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ClassMetrics.class);
 
 	private int totalMethods;

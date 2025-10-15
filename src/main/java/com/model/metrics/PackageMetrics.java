@@ -8,6 +8,7 @@ import com.utils.MetricsUtils;
 
 public class PackageMetrics extends NodeMetrics<PackageInfo> {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(PackageMetrics.class);
 
 	private int totalClasses;

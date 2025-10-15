@@ -8,6 +8,7 @@ import com.utils.MetricsUtils;
 
 public class ProjectMetrics extends NodeMetrics<ProjectInfo> {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(ProjectMetrics.class);
 	
 	private int totalPackages;

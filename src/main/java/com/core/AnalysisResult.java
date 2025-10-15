@@ -61,6 +61,8 @@ public class AnalysisResult {
 	
 	public List<ClassInfo> getClasses() {return project.getClasses();}
 	
+	public boolean hasClasses() {return project.hasClasses();}
+	
 	public int getTotalPackagesCount() {return project.getPackages().size();}
 	
 	public int getTotalClassesCount() {return getClasses().size();}

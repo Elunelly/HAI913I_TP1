@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 
 public class StatisticalData {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(StatisticalData.class);
     
     private final String metricName;

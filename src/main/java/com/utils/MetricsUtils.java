@@ -35,6 +35,7 @@ public final class MetricsUtils {
 */
 
 	//			====== Packages ======			//
+	@Deprecated
 	public static int countPackages(ProjectInfo projectInfo) {
 		return projectInfo.getPackages().size();
 	}
@@ -75,6 +76,7 @@ public final class MetricsUtils {
 	}
 
 	//			====== SiblingsPackages ======			//
+	@Deprecated
 	public static int countSiblingsPackages(PackageInfo packageInfo) {
 		return packageInfo.isRoot() ? 0 : packageInfo.getParentPackage().getSubPackages().size() - 1;
 	}
@@ -86,18 +88,22 @@ public final class MetricsUtils {
 */
 
 	//			====== Classes ======			//
+	@Deprecated
 	public static int countClasses(ProjectInfo projectInfo) {
 		return projectInfo.getClasses().size();
 	}
 
+	@Deprecated
 	public static int countClasses(PackageInfo packageInfo) {
 		return packageInfo.getClasses().size();
 	}
-	
+
+	@Deprecated
 	public static int sumClassesCount(List<PackageInfo> packages) {
 		return packages.stream().mapToInt(c -> countClasses(c)).sum();
 	}
 	
+	@Deprecated
 	public static int countAllRecursiveClasses(PackageInfo packageInfo) {
 		return packageInfo.getAllClassesRecursive().size();
 	}
@@ -211,22 +217,27 @@ public final class MetricsUtils {
 */
 
 	//			====== Methods ======			//
+	@Deprecated
 	public static int countMethods(ProjectInfo projectInfo) {
 		return sumMethodsCount(projectInfo.getClasses());
 	}
-	
+
+	@Deprecated
 	public static int countMethods(PackageInfo packageInfo) {
 		return sumMethodsCount(packageInfo.getClasses());
 	}
-	
+
+	@Deprecated
 	public static int sumMethodsCountFromPackages(List<PackageInfo> packages) {
 		return packages.stream().mapToInt(p -> countMethods(p)).sum();
 	}
-	
+
+	@Deprecated
 	public static int countMethods(ClassInfo classInfo) {
 		return classInfo.getMethods().size();
 	}
-	
+
+	@Deprecated
 	public static int sumMethodsCount(List<ClassInfo> classes) {
 		return classes.stream().mapToInt(c -> countMethods(c)).sum();
 	}
@@ -427,22 +438,27 @@ public final class MetricsUtils {
 */
 
 	//			====== Fields ======			//
+	@Deprecated
 	public static int countFields(ProjectInfo projectInfo) {
 		return sumFieldsCount(projectInfo.getClasses());
 	}
-	
+
+	@Deprecated
 	public static int countFields(PackageInfo packageInfo) {
 		return sumFieldsCount(packageInfo.getClasses());
 	}
-	
+
+	@Deprecated
 	public static int sumFieldsCountFromPackages(List<PackageInfo> packages) {
 		return packages.stream().mapToInt(p -> countFields(p)).sum();
 	}
-	
+
+	@Deprecated
 	public static int countFields(ClassInfo classInfo) {
 		return classInfo.getFields().size();
 	}
-	
+
+	@Deprecated
 	public static int sumFieldsCount(List<ClassInfo> classes) {
 		return classes.stream().mapToInt(c -> countFields(c)).sum();
 	}
