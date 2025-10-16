@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +14,11 @@ public class MethodInfo extends NodeInfo {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MethodInfo.class);
 
-	private ClassInfo parentClass;
     protected String returnType;
     protected boolean isConstructor;
     protected final List<String> parameters = new ArrayList<>();
+
+	private ClassInfo parentClass;
     
     public MethodInfo(String name, ClassInfo parent) {
     	super(name);
@@ -24,6 +27,21 @@ public class MethodInfo extends NodeInfo {
     
     public MethodInfo(String name) {
     	this(name,null);
+    }
+    
+    public MethodInfo withClass(ClassInfo parent) {
+    	setParentClass(parent);
+    	return this;
+    }
+    
+    public MethodInfo withCompilation(MethodDeclaration node) {
+		Objects.requireNonNull(node);
+		setCompilationUnit((CompilationUnit) node.getRoot());
+		this.unit_firstCharPos = node.getStartPosition();
+		this.unit_lastCharPos = node.getLength() + unit_firstCharPos -1;
+		this.unit_firstLineNum = unit.getLineNumber(unit_firstCharPos);
+		this.unit_lastLineNum = unit.getLineNumber(unit_lastCharPos);
+		return this;
     }
     
     public ClassInfo getParentClass() {return parentClass;}

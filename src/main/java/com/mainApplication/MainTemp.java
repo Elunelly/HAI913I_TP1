@@ -41,6 +41,12 @@ import com.utils.table.TableUI;
 public class MainTemp {
     
     private static final Logger logger = LoggerFactory.getLogger(MainTemp.class);
+	static {
+		if (System.getProperty("log.mode") == null)
+			System.setProperty("log.mode", "DETAILED");
+		if (System.getProperty("log.level") == null)
+			System.setProperty("log.level", "info");
+	}
     
     /**
      * Entry point for the AST Analysis demonstration.

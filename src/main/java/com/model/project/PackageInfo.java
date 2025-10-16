@@ -140,7 +140,7 @@ public class PackageInfo implements ModelInfo, HasClasses {
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, parentPackage.name, subPackages, classes);
+		return Objects.hash(name, isRoot()?"(default)":parentPackage.name, subPackages, classes);
 	}
 	
 	@Override

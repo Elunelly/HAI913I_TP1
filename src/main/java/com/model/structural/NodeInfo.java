@@ -17,13 +17,18 @@ public abstract class NodeInfo implements ModelInfo {
 	private static final Logger logger = LoggerFactory.getLogger(NodeInfo.class);
 	
 	protected final String name;
-	protected CompilationUnit unit;
 	protected NodeVisibility visibility = NodeVisibility.PACKAGE;
 	protected boolean isStatic;
 	protected boolean isAbstract;
 	protected boolean isFinal;
 	protected boolean isPublic;
 	protected List<NodeModifiers> modifiers = new ArrayList<>();
+	
+	protected CompilationUnit unit;
+	protected int unit_firstCharPos = -1;
+	protected int unit_lastCharPos = -1;
+	protected int unit_firstLineNum = -1;
+	protected int unit_lastLineNum = -1;
 	
 	public NodeInfo(String name) {
 		this.name = Objects.requireNonNull(name, "Name cannot be null");
@@ -137,6 +142,26 @@ public abstract class NodeInfo implements ModelInfo {
 	public String getSignature() {
 		return "";
 	}
+	
+	public CompilationUnit getCompilationUnit() {return unit;}
+	
+	protected void setCompilationUnit(CompilationUnit unit) {
+		CompilationUnit old = this.unit;
+		this.unit = Objects.requireNonNull(unit, "CompilationUnit cannot be null");
+		logger.debug("Change value of 'compilationUnit': %s -> %s".formatted(old,this.unit));
+	}
+	
+	public int getUnitStartPosition() {return unit_firstCharPos;}
+	
+	public int getUnitLastPosition() {return unit_lastCharPos;}
+	
+	public int getUnitStartLine() {return unit_firstLineNum;}
+	
+	public int getUnitLastLine() {return unit_lastLineNum;}
+	
+	public int getUnitLength() {return unit_lastCharPos - unit_firstCharPos + 1;}
+	
+	public int getUnitLOC() {return unit_lastLineNum - unit_firstLineNum + 1;}
 
 	@Override
 	public String toString() {

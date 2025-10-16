@@ -12,6 +12,7 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	private static final Logger logger = LoggerFactory.getLogger(BaseASTVisitor.class);
 	
 	protected VisitorResult result;
+	protected CompilationUnit currentUnit;
 	
 	public BaseASTVisitor() {
 		this.result = new VisitorResult(getVisitorName());
@@ -19,7 +20,9 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	
 	public abstract String getVisitorName();
 	
-	public VisitorResult visitAndExtract(CompilationUnit compilationUnit) {
+	public VisitorResult visitAndExtract(CompilationUnit compilationUnit, Object context) {
+		this.currentUnit = compilationUnit;
+		if (context!=null) preVisit(context);
 		if (compilationUnit == null) {
 			this.result.setError("Compilation Unit is null");
 			return this.result;
@@ -35,9 +38,17 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 		return this.result;
 	}
 	
+	public VisitorResult visitAndExtract(CompilationUnit compilationUnit) {
+		return visitAndExtract(compilationUnit, null);
+	}
+	
+	protected void preVisit(Object context) {}
+	
 	protected void afterVisit() {}
 	
 	public VisitorResult getResult() {return this.result;}
+	
+	protected CompilationUnit getCurrentUnit() {return currentUnit;}
 	
 	@Override
 	public boolean equals(Object obj) {

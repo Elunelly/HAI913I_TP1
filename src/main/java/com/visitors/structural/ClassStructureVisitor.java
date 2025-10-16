@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.project.PackageInfo;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
@@ -24,9 +25,11 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ClassStructureVisitor.class);
 	
-	private List<ClassInfo> classes = new ArrayList<>();
-	private ClassInfo currentClass = null;
-	private String currentPackage = "";
+	private final List<ClassInfo> classes = new ArrayList<>();
+	private final List<MethodInfo> methods = new ArrayList<>();
+	private final List<FieldInfo> fields = new ArrayList<>();
+	private PackageInfo currentPackage;
+	private ClassInfo currentClass;
 	private static final boolean PackageExploreChildren = true;
 	private static final boolean TypeExploreChildren = true;
 	private static final boolean MethodExploreChildren = true;
@@ -38,10 +41,9 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	public void reset() {
 		this.classes.clear();
-		logger.debug("Cleared all classes");
+		this.currentPackage = null;
 		this.currentClass = null;
-		this.currentPackage = "";
-		logger.debug("Reset currentClass and currentPackage value");
+		this.currentUnit = null;
 		this.result = new VisitorResult(getVisitorName());
 	}
 	
@@ -56,15 +58,19 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(PackageDeclaration node) {
-		this.currentPackage = node.getName().getFullyQualifiedName();
-		logger.trace("Visited Package: "+currentPackage);
+		String packageName = node.getName().getFullyQualifiedName();
+		if (!packageName.equals(currentPackage.getName())) {
+			logger.error("PackageInfo '{}' does not have the correct name '{}'",currentPackage.getName(),packageName);
+		}
+		logger.trace("Visited Package: "+packageName);
 		return PackageExploreChildren;
 	}
 	
 	@Override
 	public boolean visit(TypeDeclaration node) {
-		this.currentClass = new ClassInfo(node.getName().getIdentifier());
-		currentClass.setPackageName(this.currentPackage);
+		this.currentClass = new ClassInfo(node.getName().getIdentifier())
+				.withPackage(currentPackage)
+				.withCompilationUnit(node);
 		currentClass.setInterface(node.isInterface());
 		if (node.getSuperclassType()!=null) 
 			currentClass.setSuperClass(node.getSuperclassType().toString());
@@ -82,7 +88,9 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	public boolean visit(MethodDeclaration node) {
 		if (this.currentClass==null) return MethodExploreChildren;
 		
-		MethodInfo method = new MethodInfo(node.getName().getIdentifier());
+		MethodInfo method = new MethodInfo(node.getName().getIdentifier())
+				.withClass(currentClass)
+				.withCompilation(node);
 		method.setIsConstructor(node.isConstructor());
 		for (Object param : node.parameters()) {
 			if (param instanceof SingleVariableDeclaration) {
@@ -95,6 +103,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
         }
 		logger.trace("Visited Method: "+method);
         
+		this.methods.add(method);
         this.currentClass.addMethod(method);
 		return MethodExploreChildren;
 	}
@@ -112,11 +121,20 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 				field.setDefinedModifiers(node.getModifiers());
 				logger.trace("Visited Field: "+field);
 				
+				this.fields.add(field);
 				this.currentClass.addField(field);
 			}
 		}
 		
 		return FieldExploreChildren;
+	}
+	
+	@Override
+	protected void preVisit(Object context) {
+		if (context==null) return;
+		else if (context.getClass() == PackageInfo.class) {
+			this.currentPackage = (PackageInfo) context;
+		} else return;
 	}
 	
 	@Override

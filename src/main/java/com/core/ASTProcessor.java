@@ -234,7 +234,7 @@ public class ASTProcessor {
 			logger.debug("Executing visitor: "+visitor.getVisitorName());
 			for (Map.Entry<PackageInfo, List<CompilationUnit>> entry : project.getCompilationUnitsByPackages().entrySet()) {
 				for (CompilationUnit cu : entry.getValue())
-					visitor.visitAndExtract(cu);
+					visitor.visitAndExtract(cu,entry.getKey());
 			}
 			VisitorResult result = visitor.getResult();
 			if (result.containsKey("classes")) {

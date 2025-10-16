@@ -2,6 +2,8 @@ package com.model.structural;
 
 import java.util.Objects;
 
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,6 +21,21 @@ public class FieldInfo extends NodeInfo {
 	
 	public FieldInfo(String name) {
 		this(name,null);
+	}
+	
+	public FieldInfo withClass(ClassInfo parent) {
+		setParentClass(parent);
+		return this;
+	}
+	
+	public FieldInfo withCompilationUnit(VariableDeclarationFragment node) {
+		Objects.requireNonNull(node);
+		setCompilationUnit((CompilationUnit) node.getRoot());
+		this.unit_firstCharPos = node.getStartPosition();
+		this.unit_lastCharPos = node.getLength() + unit_firstCharPos -1;
+		this.unit_firstLineNum = unit.getLineNumber(unit_firstCharPos);
+		this.unit_lastLineNum = unit.getLineNumber(unit_lastCharPos);
+		return this;
 	}
 	
 	public ClassInfo getParentClass() {return parentClass;}

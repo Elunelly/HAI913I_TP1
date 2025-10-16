@@ -26,11 +26,6 @@ public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 	private final List<FieldInfo> fields = new ArrayList<>();
 	
 	private PackageInfo parentPackage;
-	private CompilationUnit unit;
-	private int unit_firstCharPos = -1;
-	private int unit_lastCharPos = -1;
-	private int unit_firstLineNum = -1;
-	private int unit_lastLineNum = -1;
 	
 	public ClassInfo(String name, PackageInfo parent) {
 		super(name);
@@ -96,14 +91,6 @@ public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 	
 	public List<FieldInfo> fields() {return fields;}
 	
-	public CompilationUnit getCompilationUnit() {return unit;}
-	
-	private void setCompilationUnit(CompilationUnit unit) {
-		CompilationUnit old = this.unit;
-		this.unit = Objects.requireNonNull(unit, "CompilationUnit cannot be null");
-		logger.debug("Change value of 'compilationUnit': %s -> %s".formatted(old,this.unit));
-	}
-	
 	public String getQualifiedName() {
 		if (this.packageName.isBlank()) return getName();
 		else return this.packageName + "." + getName();
@@ -147,18 +134,6 @@ public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 	public List<MethodInfo> getPackageMethods() {
 		return getMethodsByVisibility(NodeVisibility.PACKAGE);
 	}
-	
-	public int getUnitStartPosition() {return unit_firstCharPos;}
-	
-	public int getUnitLastPosition() {return unit_lastCharPos;}
-	
-	public int getUnitStartLine() {return unit_firstLineNum;}
-	
-	public int getUnitLastLine() {return unit_lastLineNum;}
-	
-	public int getUnitLength() {return unit_lastCharPos - unit_firstCharPos + 1;}
-	
-	public int getUnitLOC() {return unit_lastLineNum - unit_firstLineNum + 1;}
 	
 	@Override
 	public String getSignature() {
