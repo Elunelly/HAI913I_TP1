@@ -2,6 +2,7 @@ package com.exceptions;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,27 @@ public abstract class ASTError extends Exception {
 	
 	public String formatWhenOnDateTime() {
 		return formatWhen("yyyy-MM-dd | HH:mm:ss.SSS");
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ASTError that = (ASTError) obj;
+		return 
+			Objects.equals(this.getContext(), that.getContext()) &&
+			Objects.equals(this.getMessage(), that.getMessage()) &&
+			Objects.equals(this.getCause(), that.getCause()) &&
+			Objects.equals(this.getWhen(), that.getWhen())
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getContext(),getMessage(),getCause());
 	}
 	
 	@Override

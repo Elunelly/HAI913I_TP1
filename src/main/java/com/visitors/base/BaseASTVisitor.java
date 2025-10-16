@@ -1,5 +1,7 @@
 package com.visitors.base;
 
+import java.util.Objects;
+
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
@@ -36,6 +38,24 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	protected void afterVisit() {}
 	
 	public VisitorResult getResult() {return this.result;}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		BaseASTVisitor that = (BaseASTVisitor) obj;
+		return 
+			Objects.equals(this.result, that.result)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(result);
+	}
 	
 	@Override
 	public String toString() {

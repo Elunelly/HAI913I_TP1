@@ -3,6 +3,7 @@ package com.visitors.structural;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -26,6 +27,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	private List<ClassInfo> classes = new ArrayList<>();
 	private ClassInfo currentClass = null;
 	private String currentPackage = "";
+	private static final boolean PackageExploreChildren = true;
 	private static final boolean TypeExploreChildren = true;
 	private static final boolean MethodExploreChildren = true;
 	private static final boolean FieldExploreChildren = true;
@@ -56,13 +58,12 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	public boolean visit(PackageDeclaration node) {
 		this.currentPackage = node.getName().getFullyQualifiedName();
 		logger.trace("Visited Package: "+currentPackage);
-		return true;
+		return PackageExploreChildren;
 	}
 	
 	@Override
 	public boolean visit(TypeDeclaration node) {
-		this.currentClass = new ClassInfo();
-		currentClass.setName(node.getName().getIdentifier());
+		this.currentClass = new ClassInfo(node.getName().getIdentifier());
 		currentClass.setPackageName(this.currentPackage);
 		currentClass.setInterface(node.isInterface());
 		if (node.getSuperclassType()!=null) 
@@ -81,8 +82,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	public boolean visit(MethodDeclaration node) {
 		if (this.currentClass==null) return MethodExploreChildren;
 		
-		MethodInfo method = new MethodInfo();
-		method.setName(node.getName().getIdentifier());
+		MethodInfo method = new MethodInfo(node.getName().getIdentifier());
 		method.setIsConstructor(node.isConstructor());
 		for (Object param : node.parameters()) {
 			if (param instanceof SingleVariableDeclaration) {
@@ -106,8 +106,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		String fieldType = node.getType().toString();
 		for (Object fragmentObj : node.fragments()) {
 			if (fragmentObj instanceof VariableDeclarationFragment) {
-				FieldInfo field = new FieldInfo();
-				field.setName(((VariableDeclarationFragment) fragmentObj).getName().getIdentifier());
+				FieldInfo field = new FieldInfo(((VariableDeclarationFragment) fragmentObj).getName().getIdentifier());
 				field.setType(fieldType);
 
 				field.setDefinedModifiers(node.getModifiers());
@@ -124,6 +123,25 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	protected void afterVisit() {
 	    this.result.addData("classes", new ArrayList<>(this.classes));
 	    logger.debug("Extracted %d classes".formatted(classes.size()));
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ClassStructureVisitor that = (ClassStructureVisitor) obj;
+		return 
+			Objects.equals(this.result, that.result) &&
+			Objects.equals(this.classes, that.classes)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(result, classes);
 	}
 	
 	@Override

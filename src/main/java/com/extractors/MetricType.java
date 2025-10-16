@@ -43,6 +43,13 @@ public enum MetricType {
         return expectedReturnType;
     }
     
+    public <T> T cast(Object result, Class<T> returnType) {
+    	if(!returnType.equals(expectedReturnType)) {
+    		throw new IllegalStateException("Expected type: "+expectedReturnType+", not "+returnType);
+    	}
+    	return (T) returnType.cast(result);
+    }
+    
     public boolean isSingleValue() {
         return this == COUNT || this == AVERAGE || this == RATIO || this == FLAG;
     }

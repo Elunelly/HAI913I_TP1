@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,25 @@ public class AnalysisResult {
 	public int getTotalMethodsCount() {return getClasses().stream().mapToInt(c -> c.getMethods().size()).sum();}
 	
 	public int getTotalFieldsCount() {return getClasses().stream().mapToInt(c -> c.getFields().size()).sum();}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		AnalysisResult that = (AnalysisResult) obj;
+		return 
+			Objects.equals(this.project, that.project) &&
+			Objects.equals(this.metrics.size(), that.metrics.size())
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(project, metrics);
+	}
 	
 	@Override
 	public String toString() {

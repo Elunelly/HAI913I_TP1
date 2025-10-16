@@ -1,5 +1,7 @@
 package com.model.structural;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -7,10 +9,22 @@ public class FieldInfo extends NodeInfo {
 	
 	private static final Logger logger = LoggerFactory.getLogger(FieldInfo.class);
 
-	protected String type;
+	private ClassInfo parentClass;
+	private String type;
 	
-	public FieldInfo() {
-		super();
+	public FieldInfo(String name, ClassInfo parent) {
+		super(name);
+		setParentClass(parent);
+	}
+	
+	public FieldInfo(String name) {
+		this(name,null);
+	}
+	
+	public ClassInfo getParentClass() {return parentClass;}
+	
+	public void setParentClass(ClassInfo parent) {
+		this.parentClass = parent;
 	}
 	
 	public String getType() {return this.type;}
@@ -28,6 +42,24 @@ public class FieldInfo extends NodeInfo {
 	@Override
 	public String getSignature() {
 		return getType()+" "+getName();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		FieldInfo that = (FieldInfo) obj;
+		return 
+			Objects.equals(this.getSignature(), that.getSignature())
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getSignature());
 	}
 
 	@Override

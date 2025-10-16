@@ -2,8 +2,10 @@ package com.model.structural;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,22 +16,25 @@ public abstract class NodeInfo implements ModelInfo {
 	
 	private static final Logger logger = LoggerFactory.getLogger(NodeInfo.class);
 	
-	private String name;
-	private NodeVisibility visibility = NodeVisibility.PACKAGE;
-	private boolean isStatic;
-	private boolean isAbstract;
-	private boolean isFinal;
-	private boolean isPublic;
-	private List<NodeModifiers> modifiers = new ArrayList<>();
+	protected final String name;
+	protected CompilationUnit unit;
+	protected NodeVisibility visibility = NodeVisibility.PACKAGE;
+	protected boolean isStatic;
+	protected boolean isAbstract;
+	protected boolean isFinal;
+	protected boolean isPublic;
+	protected List<NodeModifiers> modifiers = new ArrayList<>();
 	
-	public NodeInfo() {}
+	public NodeInfo(String name) {
+		this.name = Objects.requireNonNull(name, "Name cannot be null");
+	}
 
 	public String getName() {return name;}
-
-	public void setName(String name) {
-		String old = this.name;
-		this.name = name;
-		logger.debug("Change value of 'name': %s -> %s".formatted(old,this.name));
+	
+	public CompilationUnit getUnit() {return unit;}
+	
+	public void setUnit(CompilationUnit unit) {
+		this.unit = unit;
 	}
 
 	public NodeVisibility getVisibility() {return visibility;}

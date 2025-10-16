@@ -1,5 +1,7 @@
 package com.model.metrics;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +25,31 @@ public class MethodMetrics extends NodeMetrics<MethodInfo> {
 	
 	public int getTotalParameters() {
 		return totalParameters;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		MethodMetrics that = (MethodMetrics) obj;
+		return 
+			Objects.equals(this.name, that.name) &&
+			Objects.equals(this.data, that.data) &&
+			Objects.equals(this.linesOfCode, that.linesOfCode) &&
+			Objects.equals(this.totalParameters, that.totalParameters)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(
+				name,
+				data,
+				linesOfCode,
+				totalParameters);
 	}
 	
 	@Override

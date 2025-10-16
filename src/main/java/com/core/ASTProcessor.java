@@ -6,6 +6,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
@@ -15,6 +17,7 @@ import com.calculators.StatisticsCalculator;
 import com.config.ParseConfiguration;
 import com.exceptions.ASTError;
 import com.extractors.MetricExtractor;
+import com.model.project.PackageInfo;
 import com.model.project.ProjectInfo;
 import com.model.structural.ClassInfo;
 import com.parser.ASTParserFacade;
@@ -28,7 +31,7 @@ public class ASTProcessor {
 	private static final Logger logger = LoggerFactory.getLogger(ASTProcessor.class);
 	
 	private final List<BaseASTVisitor> visitors = new ArrayList<>();
-	private final List<MetricExtractor> extractors = new ArrayList<>();
+	private final List<MetricExtractor<?>> extractors = new ArrayList<>();
 	private ASTParserFacade parserFacade;
 	private ProjectExplorer explorer;
 	private StatisticsCalculator calculator;
@@ -71,16 +74,16 @@ public class ASTProcessor {
 		logger.debug("Cleared visitors List");
 	}
 	
-	public List<MetricExtractor> getExtractors() {return Collections.unmodifiableList(extractors);}
+	public List<MetricExtractor<?>> getExtractors() {return Collections.unmodifiableList(extractors);}
 	
-	public List<MetricExtractor> copyExtractors() {return new ArrayList<>(extractors);}
+	public List<MetricExtractor<?>> copyExtractors() {return new ArrayList<>(extractors);}
 	
-	public void addExtractor(MetricExtractor extractor) {
+	public void addExtractor(MetricExtractor<?> extractor) {
 		if (extractor!=null && !extractors.contains(extractor) && extractors.add(extractor))
 			logger.debug("Extractor added: %s".formatted(extractor));
 	}
 	
-	public boolean removeExtractor(MetricExtractor extractor) {
+	public boolean removeExtractor(MetricExtractor<?> extractor) {
 		boolean result = extractors.remove(extractor);
 		if (result)
 			logger.debug("Extractor removed: %s".formatted(extractor));
@@ -183,12 +186,14 @@ public class ASTProcessor {
 		// STEP 3: Parsing all 
 		logger.info("[3/5] Parsing all Java files...");
 		List<ASTError> parsingErrors = new ArrayList<>();
-		List<CompilationUnit> compilationUnits = parserFacade.parseFiles(parsingErrors, javaFiles);
+		Map<File,CompilationUnit> compilationUnits = parserFacade.parseFiles(parsingErrors, javaFiles);
+		project.addAllCompilationUnits(compilationUnits.values());
+		project.associateCompilationUnits(compilationUnits);
 		logger.info("End of parsing files, successfully parsed "+compilationUnits.size()+"/"+javaFiles.size());
 		
 		// STEP 4: Visitor Execution
 		logger.info("[4/5] Executing all visitors...");
-		executeVisitors(project, compilationUnits);
+		executeVisitors(project);
 		AnalysisResult result = new AnalysisResult(project);
 		logger.info("End of visiting");
 		
@@ -206,16 +211,16 @@ public class ASTProcessor {
 		return processProject(projectName, path);
 	}
 	
-	private void executeVisitors(ProjectInfo project, List<CompilationUnit> compilationUnits) {
+	private void executeVisitors(ProjectInfo project) {
         if (visitors.isEmpty()) {
         	logger.warn("No visitors registered, using default ClassStructureVisitor");
             ClassStructureVisitor defaultVisitor = new ClassStructureVisitor();
-            executeVisitor(defaultVisitor, project, compilationUnits);
+            executeVisitor(defaultVisitor, project);
             return;
         }
         
         for (BaseASTVisitor visitor : visitors) {
-            executeVisitor(visitor, project, compilationUnits);
+            executeVisitor(visitor, project);
         }
 	}
 	
@@ -224,11 +229,12 @@ public class ASTProcessor {
 	}
 	
     @SuppressWarnings("unchecked")
-	private void executeVisitor(BaseASTVisitor visitor, ProjectInfo project, List<CompilationUnit> compilationUnits) {
+	private void executeVisitor(BaseASTVisitor visitor, ProjectInfo project) {
 		try {
 			logger.debug("Executing visitor: "+visitor.getVisitorName());
-			for (CompilationUnit cu : compilationUnits) {
-				visitor.visitAndExtract(cu);
+			for (Map.Entry<PackageInfo, List<CompilationUnit>> entry : project.getCompilationUnitsByPackages().entrySet()) {
+				for (CompilationUnit cu : entry.getValue())
+					visitor.visitAndExtract(cu);
 			}
 			VisitorResult result = visitor.getResult();
 			if (result.containsKey("classes")) {
@@ -241,10 +247,31 @@ public class ASTProcessor {
 				}
 			}
 			
-			project.addAllCompilationUnits(compilationUnits);
 		} catch (Exception e) {
 			logger.error("Error executing visitor '"+visitor.getVisitorName()+"': "+visitor.getResult().getErrorMessage());
 		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ASTProcessor that = (ASTProcessor) obj;
+		return 
+			Objects.equals(this.parserFacade, that.parserFacade) &&
+			Objects.equals(this.explorer, that.explorer) &&
+			Objects.equals(this.calculator, that.calculator) &&
+			Objects.equals(this.visitors.size(), that.visitors.size()) &&
+			Objects.equals(this.extractors.size(), that.extractors.size())
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(parserFacade, explorer, calculator, visitors, extractors);
 	}
     
     @Override

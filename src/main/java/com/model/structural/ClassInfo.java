@@ -3,35 +3,69 @@ package com.model.structural;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.model.interfaces.HasFields;
 import com.model.interfaces.HasMethods;
+import com.model.project.PackageInfo;
 
 public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ClassInfo.class);
 	
-	protected String packageName = "";
-	protected boolean isInterface;
-	protected String superClass;
-	protected final List<String> interfaces = new ArrayList<>();
-	protected final List<MethodInfo> methods = new ArrayList<>();
-	protected final List<FieldInfo> fields = new ArrayList<>();
+	private String packageName = "";
+	private boolean isInterface;
+	private String superClass;
+	private final List<String> interfaces = new ArrayList<>();
+	private final List<MethodInfo> methods = new ArrayList<>();
+	private final List<FieldInfo> fields = new ArrayList<>();
 	
-	public ClassInfo() {
-		super();
+	private PackageInfo parentPackage;
+	private CompilationUnit unit;
+	private int unit_firstCharPos = -1;
+	private int unit_lastCharPos = -1;
+	private int unit_firstLineNum = -1;
+	private int unit_lastLineNum = -1;
+	
+	public ClassInfo(String name, PackageInfo parent) {
+		super(name);
+		setPackage(parent);
+	}
+	
+	public ClassInfo(String name) {
+		this(name,null);
+	}
+	
+	public ClassInfo withPackage(PackageInfo parent) {
+		setPackage(parent);
+		return this;
+	}
+	
+	public ClassInfo withCompilationUnit(TypeDeclaration node) {
+		Objects.requireNonNull(node);
+		setCompilationUnit((CompilationUnit) node.getRoot());
+		this.unit_firstCharPos = node.getStartPosition();
+		this.unit_lastCharPos = node.getLength() + unit_firstCharPos -1;
+		this.unit_firstLineNum = unit.getLineNumber(unit_firstCharPos);
+		this.unit_lastLineNum = unit.getLineNumber(unit_lastCharPos);
+		return this;
+	}
+	
+	public PackageInfo getParentPackage() {return this.parentPackage;}
+	
+	public void setPackage(PackageInfo parentPackage) {
+		PackageInfo old = this.parentPackage;
+		this.parentPackage = Objects.requireNonNull(parentPackage);
+		this.packageName = parentPackage.getName();
+		logger.debug("Change value of 'parentPackage': %s -> %s".formatted(old,this.parentPackage));
 	}
 	
 	public String getPackageName() {return this.packageName;}
-
-	public void setPackageName(String packageName) {
-		String old = this.packageName;
-		this.packageName = packageName!=null ? packageName : "";
-		logger.debug("Change value of 'packageName': %s -> %s".formatted(old,this.packageName));
-	}
 
 	public boolean isInterface() {return this.isInterface;}
 
@@ -61,6 +95,14 @@ public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 	public List<MethodInfo> methods() {return methods;}
 	
 	public List<FieldInfo> fields() {return fields;}
+	
+	public CompilationUnit getCompilationUnit() {return unit;}
+	
+	private void setCompilationUnit(CompilationUnit unit) {
+		CompilationUnit old = this.unit;
+		this.unit = Objects.requireNonNull(unit, "CompilationUnit cannot be null");
+		logger.debug("Change value of 'compilationUnit': %s -> %s".formatted(old,this.unit));
+	}
 	
 	public String getQualifiedName() {
 		if (this.packageName.isBlank()) return getName();
@@ -106,6 +148,18 @@ public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 		return getMethodsByVisibility(NodeVisibility.PACKAGE);
 	}
 	
+	public int getUnitStartPosition() {return unit_firstCharPos;}
+	
+	public int getUnitLastPosition() {return unit_lastCharPos;}
+	
+	public int getUnitStartLine() {return unit_firstLineNum;}
+	
+	public int getUnitLastLine() {return unit_lastLineNum;}
+	
+	public int getUnitLength() {return unit_lastCharPos - unit_firstCharPos + 1;}
+	
+	public int getUnitLOC() {return unit_lastLineNum - unit_firstLineNum + 1;}
+	
 	@Override
 	public String getSignature() {
 		return 
@@ -126,6 +180,27 @@ public class ClassInfo extends NodeInfo implements HasMethods, HasFields {
 		return "%s { %d field%s, %d method%s }"
 				.formatted(getFullSignature(),fn,fn==1?"":"s",mn,mn==1?"":"s")
 		;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ClassInfo that = (ClassInfo) obj;
+		return 
+			Objects.equals(this.getSignature(), that.getSignature()) &&
+			Objects.equals(this.packageName, that.packageName) &&
+			Objects.equals(this.methods.size(), that.methods.size()) &&
+			Objects.equals(this.fields.size(), that.fields.size())
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getSignature(), packageName, methods.size(), fields.size());
 	}
 
 	@Override

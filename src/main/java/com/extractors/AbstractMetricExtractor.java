@@ -1,22 +1,11 @@
 package com.extractors;
 
-import java.util.Collection;
-import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.core.AnalysisResult;
-import com.model.interfaces.HasClasses;
-import com.model.interfaces.HasFields;
-import com.model.interfaces.HasMethods;
-import com.model.interfaces.HasPackages;
-import com.model.project.PackageInfo;
-import com.model.structural.ClassInfo;
-import com.model.structural.FieldInfo;
-import com.model.structural.MethodInfo;
-
-public abstract class AbstractMetricExtractor implements MetricExtractor {
+public abstract class AbstractMetricExtractor<T> implements MetricExtractor<T> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(AbstractMetricExtractor.class);
 	
@@ -24,8 +13,8 @@ public abstract class AbstractMetricExtractor implements MetricExtractor {
 	protected final MetricType type;
 	
 	protected AbstractMetricExtractor(String metricName, MetricType type) {
-		this.metricName = metricName;
-		this.type = type;
+		this.metricName = Objects.requireNonNull(metricName, "Metric name cannot be null");
+		this.type = Objects.requireNonNull(type, "Metric type is required");
 	}
 	
 	@Override
@@ -34,58 +23,37 @@ public abstract class AbstractMetricExtractor implements MetricExtractor {
 	@Override
 	public MetricType getMetricType() {return type;}
 	
-	protected List<PackageInfo> getPackages(AnalysisResult source) {
-		return source.getProject().getPackages();
-	}
-	
-	protected <T extends HasPackages> List<PackageInfo> getPackages(T source) {
-		return source.getPackages();
-	}
-	
-	protected <T extends HasPackages> List<PackageInfo> getAllPackages(Collection<T> source) {
-		return source.stream().flatMap(s -> getPackages(s).stream()).toList();
-	}
-	
-	protected List<ClassInfo> getClasses(AnalysisResult source) {
-		return source.getClasses();
-	}
-	
-	protected <T extends HasClasses> List<ClassInfo> getClasses(T source) {
-		return source.getClasses();
-	}
-	
-	protected <T extends HasClasses> List<ClassInfo> getAllClasses(Collection<T> source) {
-		return source.stream().flatMap(s -> getClasses(s).stream()).toList();
-	}
-	
-	protected List<MethodInfo> getMethods(AnalysisResult source) {
-		return source.getClasses().stream().flatMap(c -> c.getMethods().stream()).toList();
-	}
-	
-	protected <T extends HasMethods> List<MethodInfo> getMethods(T source) {
-		return source.getMethods();
-	}
-	
-	protected <T extends HasMethods> List<MethodInfo> getAllMethods(Collection<T> source) {
-		return source.stream().flatMap(s -> getMethods(s).stream()).toList();
-	}
-	
-	protected List<FieldInfo> getFields(AnalysisResult source) {
-		return source.getClasses().stream().flatMap(c -> c.getFields().stream()).toList();
-	}
-	
-	protected <T extends HasFields> List<FieldInfo> getFields(T source) {
-		return source.getFields();
-	}
-	
-	protected <T extends HasFields> List<FieldInfo> getAllFields(Collection<T> source) {
-		return source.stream().flatMap(s -> getFields(s).stream()).toList();
+	public final Object extractWithLogging(T source) {
+		Objects.requireNonNull(source, "Source cannot be null for: "+metricName);
+		try {
+			long timeStart = System.currentTimeMillis();
+			Object result = extract(source);
+			long duration = System.currentTimeMillis() - timeStart;
+			logger.debug("Extracted metric '{}': {} ({}ms)", metricName, result, duration);
+			return result;
+		} catch(Exception e) {
+			logger.error("Failed extracting metric '{}': {}", metricName, e.getMessage());
+			return null;
+		}
 	}
 	
 	@Override
-	public Object wrapper(Object result) {
-        logger.debug("Extracted metric '{}': {}", getMetricName(), result);
-        return result;
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		AbstractMetricExtractor<?> that = (AbstractMetricExtractor<?>) obj;
+		return 
+			Objects.equals(this.metricName, that.metricName) &&
+			Objects.equals(this.type, that.type)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(metricName, type);
 	}
 
 }

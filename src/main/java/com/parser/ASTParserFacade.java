@@ -3,9 +3,10 @@ package com.parser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -46,7 +47,7 @@ public class ASTParserFacade {
 		
 		CompilationUnit compilationUnit = (CompilationUnit) this.parser.createAST(null);
 		if (compilationUnit!=null)
-			logger.debug("Successfully created the CompilationUnit '{}': {}",unitName,compilationUnit);
+			logger.debug("Successfully created the CompilationUnit '{}'",unitName);
 		return compilationUnit;
 	}
 	
@@ -54,7 +55,7 @@ public class ASTParserFacade {
 		return parseString(javaString, null);
 	}
 	
-	public CompilationUnit parseFile(File javaFile) {
+	public Map.Entry<File,CompilationUnit> parseFile(File javaFile) {
 		if (javaFile == null || !javaFile.exists()) {
 			IllegalArgumentException error = new IllegalArgumentException("Java file "+javaFile+" does not exist");
 			logger.error(error.getLocalizedMessage());
@@ -68,7 +69,7 @@ public class ASTParserFacade {
 		try {
 			String content = Files.readString(javaFile.toPath());
 			logger.debug("Successfully read the file: {}",javaFile.getName());
-			return parseString(content, javaFile.getName());
+			return Map.entry(javaFile,parseString(content, javaFile.getName()));
 		} catch (IOException e) {
 			RuntimeException error = new RuntimeException("Error reading file "+javaFile.getName(), e);
 			logger.error(error.getLocalizedMessage());
@@ -76,12 +77,11 @@ public class ASTParserFacade {
 		}
 	}
 	
-	public List<CompilationUnit> parseFiles(List<ASTError> errorsCollector, List<File> files) {
-		ArrayList<CompilationUnit> result = new ArrayList<>();
+	public Map<File,CompilationUnit> parseFiles(List<ASTError> errorsCollector, List<File> files) {
+		Map<File,CompilationUnit> result = new HashMap<>();
 		for (File file : files) {
 			try {
-				CompilationUnit cu = parseFile(file);
-				result.add(cu);
+				result.put(file,parseFile(file).getValue());
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getLocalizedMessage());
 				if (errorsCollector != null)
@@ -96,16 +96,8 @@ public class ASTParserFacade {
 		
 	}
 	
-	public List<CompilationUnit> parseFiles(List<ASTError> errorsCollector, File... files) {
-		return parseFiles(errorsCollector, new ArrayList<>(Arrays.asList(files)));
-	}
-	
-	public List<CompilationUnit> parseFiles(List<File> files) {
+	public Map<File,CompilationUnit> parseFiles(List<File> files) {
 		return parseFiles(null, files);
-	}
-	
-	public List<CompilationUnit> parseFiles(File... files) {
-		return parseFiles(null, new ArrayList<>(Arrays.asList(files)));
 	}
 	
 	private ASTParser createParser() {
@@ -121,6 +113,25 @@ public class ASTParserFacade {
 	
 	public static ASTParserFacade createDefault() {
 		return new ASTParserFacade();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ASTParserFacade that = (ASTParserFacade) obj;
+		return 
+			Objects.equals(this.config, that.config) &&
+			Objects.equals(this.parser, that.parser)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(config, parser);
 	}
 	
 	@Override

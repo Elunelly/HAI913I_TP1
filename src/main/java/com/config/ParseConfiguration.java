@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.AST;
 import org.slf4j.Logger;
@@ -277,6 +278,28 @@ public class ParseConfiguration {
 			"\n  → Class Paths       = "+this.classPaths+
 			"\n  → Source Paths      = "+this.sourcePaths
 		;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ParseConfiguration that = (ParseConfiguration) obj;
+		return 
+			Objects.equals(this.currentJLS, that.currentJLS) &&
+			Objects.equals(this.resolveBindings, that.resolveBindings) &&
+			Objects.equals(this.classPaths.size(), that.classPaths.size()) &&
+			Objects.equals(this.sourcePaths.size(), that.sourcePaths.size()) &&
+			Objects.equals(this.defaultUnitName, that.defaultUnitName)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(currentJLS, resolveBindings, classPaths, sourcePaths, defaultUnitName);
 	}
 	
 	@Override

@@ -1,5 +1,7 @@
 package com.model.metrics;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,37 @@ public class ProjectMetrics extends NodeMetrics<ProjectInfo> {
 
 	public double getAvgLOCPerMethod() {
 		return avgLOCPerMethod;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ProjectMetrics that = (ProjectMetrics) obj;
+		return 
+			Objects.equals(this.name, that.name) &&
+			Objects.equals(this.data, that.data) &&
+			Objects.equals(this.linesOfCode, that.linesOfCode) &&
+			Objects.equals(this.totalPackages, that.totalPackages) &&
+			Objects.equals(this.totalClasses, that.totalClasses) &&
+			Objects.equals(this.totalMethods, that.totalMethods) &&
+			Objects.equals(this.totalFields, that.totalFields)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(
+				name,
+				data,
+				linesOfCode,
+				totalPackages,
+				totalClasses,
+				totalMethods,
+				totalFields);
 	}
 
 	@Override

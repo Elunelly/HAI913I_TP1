@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +20,22 @@ public class PackageInfo implements ModelInfo, HasClasses {
 	private static final Logger logger = LoggerFactory.getLogger(PackageInfo.class);
 	
 	private final String name;
+	private final ProjectInfo project;
 	private PackageInfo parentPackage;
 	private final Map<String,PackageInfo> subPackages = new HashMap<>();
 	private final List<ClassInfo> classes = new ArrayList<>();
 
-	public PackageInfo(String name) {
+	public PackageInfo(String name, ProjectInfo project) {
 		super();
 		this.name = name.trim();
+		this.project = project;
 	}
 	
 	public String getName() {return this.name;}
 	
 	public String getLastName() {return this.name.substring(this.name.lastIndexOf(".")+1);}
+	
+	public ProjectInfo getProject() {return project;}
 	
 	public PackageInfo getParentPackage() {return this.parentPackage;}
 	
@@ -117,11 +122,25 @@ public class PackageInfo implements ModelInfo, HasClasses {
 		return result;
 	}
 	
-	public boolean equals(PackageInfo that) {
-		return
-			this.name.equals(that.name) &&
-			this.parentPackage.equals(that.parentPackage)
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		PackageInfo that = (PackageInfo) obj;
+		return 
+			Objects.equals(this.name, that.name) &&
+			Objects.equals(this.parentPackage.name, that.parentPackage.name) &&
+			Objects.equals(this.subPackages.size(), that.subPackages.size()) &&
+			Objects.equals(this.classes.size(), that.classes.size())
 		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, parentPackage.name, subPackages, classes);
 	}
 	
 	@Override

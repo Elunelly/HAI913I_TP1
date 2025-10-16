@@ -3,6 +3,7 @@ package com.model.structural;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,12 +12,24 @@ public class MethodInfo extends NodeInfo {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MethodInfo.class);
 
+	private ClassInfo parentClass;
     protected String returnType;
     protected boolean isConstructor;
     protected final List<String> parameters = new ArrayList<>();
     
-    public MethodInfo() {
-    	super();
+    public MethodInfo(String name, ClassInfo parent) {
+    	super(name);
+    	setParentClass(parent);
+    }
+    
+    public MethodInfo(String name) {
+    	this(name,null);
+    }
+    
+    public ClassInfo getParentClass() {return parentClass;}
+    
+    public void setParentClass(ClassInfo parent) {
+    	this.parentClass = parent;
     }
     
     public String getReturnType() {return this.returnType;}
@@ -50,6 +63,25 @@ public class MethodInfo extends NodeInfo {
 			getName()+
 			"("+String.join(", ",getParameters())+")"
 		;
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		MethodInfo that = (MethodInfo) obj;
+		return 
+			Objects.equals(this.getSignature(), that.getSignature()) &&
+			Objects.equals(this.returnType, that.returnType)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(getSignature(), returnType);
 	}
 
 	@Override

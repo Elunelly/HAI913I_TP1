@@ -14,13 +14,13 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.core.exceptions.ExplorationError;
 import com.model.project.ProjectInfo;
-import com.model.project.PackageInfo;
 import com.utils.table.TableUI;
 
 public class ProjectExplorer {
@@ -208,16 +208,7 @@ public class ProjectExplorer {
 			exploreDirectory(rootPath);
 		else
 			groupAllFilesByPackage(javaFiles);
-		ProjectInfo project = new ProjectInfo(projectName, currentProjectRootPath);
-
-		for (Map.Entry<String, List<File>> entry : currentProjectGroupedFilesByPackage.entrySet()) {
-			String packageName = entry.getKey();
-			PackageInfo packageInfo = new PackageInfo(packageName);
-			project.addPackage(packageInfo);
-		}
-
-		project.buildPackagesHierarchy();
-		return project;
+		return new ProjectInfo(projectName, currentProjectRootPath, currentProjectGroupedFilesByPackage);
 	}
 	
 	public ProjectInfo buildJavaProject(String projectName, Path rootPath) throws IOException {
@@ -327,6 +318,26 @@ public class ProjectExplorer {
 			),
 			":"
 		);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		ProjectExplorer that = (ProjectExplorer) obj;
+		return 
+			Objects.equals(this.excludedPatterns, that.excludedPatterns) &&
+			Objects.equals(this.excludedDirectories, that.excludedDirectories) &&
+			Objects.equals(this.maxDepth, that.maxDepth)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(excludedPatterns, excludedDirectories, maxDepth);
 	}
 	
 	@Override

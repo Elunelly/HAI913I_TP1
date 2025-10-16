@@ -13,10 +13,10 @@ public abstract class NodeMetrics<T extends ModelInfo> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(NodeMetrics.class);
 	
-	private final String name;
-	private final Map<String,Object> data = new HashMap<>();
-	private int linesOfCode = -1;
-	private boolean isCalculated = false;
+	protected final String name;
+	protected final Map<String,Object> data = new HashMap<>();
+	protected int linesOfCode = -1;
+	protected boolean isCalculated = false;
 	
 	public NodeMetrics(String name) {
 		if (name==null || name.isBlank()) {

@@ -3,6 +3,7 @@ package com.visitors.base;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,13 +12,13 @@ public class VisitorResult {
 	
 	private static final Logger logger = LoggerFactory.getLogger(VisitorResult.class);
 	
-	private final String visitorName;
+	private final String name;
 	private final Map<String,Object> data = new HashMap<>();
 	private boolean isSuccess = true;
 	private String errorMessage;
 	
 	public VisitorResult(String visitorName) {
-		this.visitorName = visitorName;
+		this.name = visitorName;
 	}
 	
 	public void addData(String key, Object value) {
@@ -56,19 +57,39 @@ public class VisitorResult {
 			logger.debug("Reset on no-error");
 	}
 	
-	public String getVisitorName() {return this.visitorName;}
+	public String getVisitorName() {return this.name;}
 	
 	public boolean isSuccessful() {return this.isSuccess;}
 	
 	public String getErrorMessage() {return this.errorMessage;}
 	
 	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+		
+		VisitorResult that = (VisitorResult) obj;
+		return 
+			Objects.equals(this.name, that.name) &&
+			Objects.equals(this.data, that.data) &&
+			Objects.equals(this.isSuccess, that.isSuccess)
+		;
+	}
+	
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, data, isSuccess);
+	}
+	
+	@Override
 	public String toString() {
 		return (this.getClass().getSimpleName()+"{"
-				+ "name=%s, "
+				+ "Visitorname=%s, "
 				+ "successful=%s, "
 				+ "data=%s}")
-				.formatted(visitorName, isSuccess, data);
+				.formatted(name, isSuccess, data);
 	}
 
 }
