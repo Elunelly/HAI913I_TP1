@@ -7,7 +7,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.model.interfaces.ModelInfo;
+import com.model.utils.ModelInfo;
 
 public abstract class NodeMetrics<T extends ModelInfo> {
 	

@@ -176,7 +176,7 @@ public class MainTemp {
         System.out.println("─────────────────────────────────────────────────────");
         System.out.println();
         
-        List<PackageInfo> packages = project.getPackages();
+        List<PackageInfo> packages = project.copyPackages();
         packages.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
         
         for (PackageInfo pkg : packages) {

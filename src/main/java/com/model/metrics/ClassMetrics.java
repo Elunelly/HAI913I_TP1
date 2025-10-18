@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.model.structural.ClassInfo;
-import com.model.structural.NodeVisibility;
-import com.utils.MetricsUtils;
 
 public class ClassMetrics extends NodeMetrics<ClassInfo> {
 	
@@ -30,11 +28,11 @@ public class ClassMetrics extends NodeMetrics<ClassInfo> {
 
 	@Override
 	protected void doCalculate(ClassInfo source) {
-		this.totalMethods = MetricsUtils.countMethods(source);
-		this.totalFields = MetricsUtils.countFields(source);
-		this.totalPublicMethods = MetricsUtils.countPublicMethods(source);
-		this.totalPrivateMethods = MetricsUtils.countMethodsByVisibility(source, NodeVisibility.PRIVATE);
-		this.totalConstantFields = MetricsUtils.countConstantFields(source);
+//		this.totalMethods = MetricsUtils.countMethods(source);
+//		this.totalFields = MetricsUtils.countFields(source);
+//		this.totalPublicMethods = MetricsUtils.countPublicMethods(source);
+//		this.totalPrivateMethods = MetricsUtils.countMethodsByVisibility(source, NodeVisibility.PRIVATE);
+//		this.totalConstantFields = MetricsUtils.countConstantFields(source);
 	}
 
 	public int getTotalMethods() {

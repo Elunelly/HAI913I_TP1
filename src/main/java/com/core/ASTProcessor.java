@@ -19,11 +19,9 @@ import com.exceptions.ASTError;
 import com.extractors.MetricExtractor;
 import com.model.project.PackageInfo;
 import com.model.project.ProjectInfo;
-import com.model.structural.ClassInfo;
 import com.parser.ASTParserFacade;
 import com.utils.table.TableUI;
 import com.visitors.base.BaseASTVisitor;
-import com.visitors.base.VisitorResult;
 import com.visitors.structural.ClassStructureVisitor;
 
 public class ASTProcessor {
@@ -137,6 +135,14 @@ public class ASTProcessor {
 		clearErrors();
 		
 		ParseConfiguration config = parserFacade.getConfig();
+
+		try {
+			rootPath = explorer.setupCurrentProject(rootPath);
+		} catch (IOException e) {
+			logger.error(e.getMessage());
+			e.printStackTrace();
+			return null;
+		}
 		
 		// STEP 0: Configuration
 		logger.info(
@@ -170,6 +176,7 @@ public class ASTProcessor {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			logger.debug(e.getStackTrace().toString());
+			return null;
 		}
 		
 		// STEP 2: Building JavaProject
@@ -177,24 +184,30 @@ public class ASTProcessor {
 		try {
 			logger.info("[2/5] Building project hierarchy...");
 			project = explorer.buildJavaProject(projectName, rootPath, javaFiles);
+			logger.debug(project.toString());
 			logger.info("End of building");
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 			logger.debug(e.getStackTrace().toString());
+			return null;
 		}
 		
 		// STEP 3: Parsing all 
 		logger.info("[3/5] Parsing all Java files...");
 		List<ASTError> parsingErrors = new ArrayList<>();
-		Map<File,CompilationUnit> compilationUnits = parserFacade.parseFiles(parsingErrors, javaFiles);
-		project.addAllCompilationUnits(compilationUnits.values());
-		project.associateCompilationUnits(compilationUnits);
+		Map<String,CompilationUnit> compilationUnits = parserFacade.parseFiles(parsingErrors, javaFiles);
+		logger.debug(compilationUnits.keySet().toString());
+		project.buildCompilationUnitsAssociation(compilationUnits);
+		logger.debug(project.toString());
+		project.getPackages().stream()
+			.forEach(p -> logger.debug("Package: {}\nUnits: {}",p.getName(),p.getMappedUnits()));
 		logger.info("End of parsing files, successfully parsed "+compilationUnits.size()+"/"+javaFiles.size());
 		
 		// STEP 4: Visitor Execution
 		logger.info("[4/5] Executing all visitors...");
 		executeVisitors(project);
 		AnalysisResult result = new AnalysisResult(project);
+		logger.debug(result.toString());
 		logger.info("End of visiting");
 		
 		// STEP 5: Metric Extraction
@@ -228,23 +241,12 @@ public class ASTProcessor {
 		// TODO
 	}
 	
-    @SuppressWarnings("unchecked")
-	private void executeVisitor(BaseASTVisitor visitor, ProjectInfo project) {
+    private void executeVisitor(BaseASTVisitor visitor, ProjectInfo project) {
 		try {
 			logger.debug("Executing visitor: "+visitor.getVisitorName());
-			for (Map.Entry<PackageInfo, List<CompilationUnit>> entry : project.getCompilationUnitsByPackages().entrySet()) {
-				for (CompilationUnit cu : entry.getValue())
-					visitor.visitAndExtract(cu,entry.getKey());
-			}
-			VisitorResult result = visitor.getResult();
-			if (result.containsKey("classes")) {
-				List<ClassInfo> extractedClasses = (List<ClassInfo>) result.getDataBy("classes");
-				if (extractedClasses != null) {
-					for (ClassInfo classInfo : extractedClasses) {
-					   project.addClass(classInfo);
-					}
-					logger.debug("Successfully extracted "+extractedClasses.size()+" class(es)");
-				}
+			for (PackageInfo packageInfo : project.copyPackages()) {
+				for (CompilationUnit cu : packageInfo.copyUnits())
+					visitor.visitAndExtract(cu,packageInfo);
 			}
 			
 		} catch (Exception e) {

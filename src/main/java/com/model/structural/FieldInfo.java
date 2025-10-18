@@ -2,55 +2,27 @@ package com.model.structural;
 
 import java.util.Objects;
 
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class FieldInfo extends NodeInfo {
+public class FieldInfo extends StructuralNode<VariableDeclarationFragment> {
 	
+	@SuppressWarnings("unused")
 	private static final Logger logger = LoggerFactory.getLogger(FieldInfo.class);
 
-	private ClassInfo parentClass;
-	private String type;
+	private final ClassInfo parentClass;
+	private final String type;
 	
-	public FieldInfo(String name, ClassInfo parent) {
-		super(name);
-		setParentClass(parent);
-	}
-	
-	public FieldInfo(String name) {
-		this(name,null);
-	}
-	
-	public FieldInfo withClass(ClassInfo parent) {
-		setParentClass(parent);
-		return this;
-	}
-	
-	public FieldInfo withCompilationUnit(VariableDeclarationFragment node) {
-		Objects.requireNonNull(node);
-		setCompilationUnit((CompilationUnit) node.getRoot());
-		this.unit_firstCharPos = node.getStartPosition();
-		this.unit_lastCharPos = node.getLength() + unit_firstCharPos -1;
-		this.unit_firstLineNum = unit.getLineNumber(unit_firstCharPos);
-		this.unit_lastLineNum = unit.getLineNumber(unit_lastCharPos);
-		return this;
+	public FieldInfo(VariableDeclarationFragment node, ClassInfo parentClass, String type) {
+		super(Objects.requireNonNull(node),node.getName().getIdentifier());
+		this.parentClass = Objects.requireNonNull(parentClass, "Class cannot be null for '"+name+"' method");
+		this.type = Objects.requireNonNull(type, "Type cannot be null");
 	}
 	
 	public ClassInfo getParentClass() {return parentClass;}
 	
-	public void setParentClass(ClassInfo parent) {
-		this.parentClass = parent;
-	}
-	
 	public String getType() {return this.type;}
-	
-	public void setType(String type) {
-		String old = this.type;
-		this.type = type;
-		logger.debug("Change value of 'type': %s -> %s".formatted(old,this.type));
-	}
 	
 	public boolean isConstant() {
 		return isStatic() && isFinal();
@@ -59,6 +31,11 @@ public class FieldInfo extends NodeInfo {
 	@Override
 	public String getSignature() {
 		return getType()+" "+getName();
+	}
+
+	@Override
+	public String getShortSignature() {
+		return getName();
 	}
 	
 	@Override
@@ -89,12 +66,12 @@ public class FieldInfo extends NodeInfo {
 				+ "isAbstract=%s, "
 				+ "isFinal=%s}")
 				.formatted(
-					this.getVisibility().name(),
-					this.getName(),
+					getVisibility().name(),
+					getName(),
 					type,
-					String.valueOf(this.isStatic()),
-					String.valueOf(this.isAbstract()),
-					String.valueOf(this.isFinal())
+					String.valueOf(isStatic()),
+					String.valueOf(isAbstract()),
+					String.valueOf(isFinal())
 				);
 	}
 	

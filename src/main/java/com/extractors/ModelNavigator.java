@@ -30,8 +30,8 @@ public final class ModelNavigator {
 		return switch(source) {
 			case null -> Collections.emptyList();
 			case AnalysisResult r -> r.getClasses();
-			case ProjectInfo p -> p.getClasses();
-			case PackageInfo p -> p.getAllClassesRecursive();
+			case ProjectInfo p -> p.getAllClasses();
+			case PackageInfo p -> p.getAllClasses();
 			case ClassInfo c-> Collections.unmodifiableList(List.of(c));
 			case Collection<?> sources -> sources.stream().flatMap(s -> getClasses(s).stream()).distinct().toList();
 			default -> Collections.emptyList();

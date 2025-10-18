@@ -6,7 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.model.project.ProjectInfo;
-import com.utils.MetricsUtils;
 
 public class ProjectMetrics extends NodeMetrics<ProjectInfo> {
 	
@@ -32,14 +31,14 @@ public class ProjectMetrics extends NodeMetrics<ProjectInfo> {
 
 	@Override
 	protected void doCalculate(ProjectInfo source) {
-		this.totalPackages = MetricsUtils.countPackages(source);
-		this.totalClasses = MetricsUtils.countClasses(source);
-		this.totalMethods = MetricsUtils.countMethods(source);
-		this.totalFields = MetricsUtils.countFields(source);
-		
-		this.avgClassesPerPackage = MetricsUtils.average(totalClasses, totalPackages);
-		this.avgMethodsPerClass = MetricsUtils.average(totalMethods, totalClasses);
-		this.avgFieldsPerClass = MetricsUtils.average(totalFields, totalClasses);
+//		this.totalPackages = MetricsUtils.countPackages(source);
+//		this.totalClasses = MetricsUtils.countClasses(source);
+//		this.totalMethods = MetricsUtils.countMethods(source);
+//		this.totalFields = MetricsUtils.countFields(source);
+//		
+//		this.avgClassesPerPackage = MetricsUtils.average(totalClasses, totalPackages);
+//		this.avgMethodsPerClass = MetricsUtils.average(totalMethods, totalClasses);
+//		this.avgFieldsPerClass = MetricsUtils.average(totalFields, totalClasses);
 	}
 	
 	public int getTotalPackages() {

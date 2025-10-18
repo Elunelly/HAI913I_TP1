@@ -1,6 +1,10 @@
-package com.model.structural;
+package com.model.utils;
+
+import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.Modifier;
+
+import com.model.structural.MethodInfo;
 
 public enum NodeVisibility {
 	

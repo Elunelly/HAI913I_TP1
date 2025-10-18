@@ -55,7 +55,7 @@ public class ASTParserFacade {
 		return parseString(javaString, null);
 	}
 	
-	public Map.Entry<File,CompilationUnit> parseFile(File javaFile) {
+	public Map.Entry<String,CompilationUnit> parseFile(File javaFile) {
 		if (javaFile == null || !javaFile.exists()) {
 			IllegalArgumentException error = new IllegalArgumentException("Java file "+javaFile+" does not exist");
 			logger.error(error.getLocalizedMessage());
@@ -69,7 +69,7 @@ public class ASTParserFacade {
 		try {
 			String content = Files.readString(javaFile.toPath());
 			logger.debug("Successfully read the file: {}",javaFile.getName());
-			return Map.entry(javaFile,parseString(content, javaFile.getName()));
+			return Map.entry(javaFile.getPath(),parseString(content, javaFile.getName()));
 		} catch (IOException e) {
 			RuntimeException error = new RuntimeException("Error reading file "+javaFile.getName(), e);
 			logger.error(error.getLocalizedMessage());
@@ -77,11 +77,12 @@ public class ASTParserFacade {
 		}
 	}
 	
-	public Map<File,CompilationUnit> parseFiles(List<ASTError> errorsCollector, List<File> files) {
-		Map<File,CompilationUnit> result = new HashMap<>();
+	public Map<String,CompilationUnit> parseFiles(List<ASTError> errorsCollector, List<File> files) {
+		Map<String,CompilationUnit> result = new HashMap<>();
 		for (File file : files) {
 			try {
-				result.put(file,parseFile(file).getValue());
+				Map.Entry<String,CompilationUnit> parsedFile = parseFile(file);
+				result.put(parsedFile.getKey(),parsedFile.getValue());
 			} catch (IllegalArgumentException e) {
 				logger.error(e.getLocalizedMessage());
 				if (errorsCollector != null)
@@ -96,7 +97,7 @@ public class ASTParserFacade {
 		
 	}
 	
-	public Map<File,CompilationUnit> parseFiles(List<File> files) {
+	public Map<String,CompilationUnit> parseFiles(List<File> files) {
 		return parseFiles(null, files);
 	}
 	

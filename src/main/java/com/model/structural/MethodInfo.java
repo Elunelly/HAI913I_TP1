@@ -5,74 +5,48 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MethodInfo extends NodeInfo {
+public class MethodInfo extends StructuralNode<MethodDeclaration> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MethodInfo.class);
 
-    protected String returnType;
-    protected boolean isConstructor;
-    protected final List<String> parameters = new ArrayList<>();
-
-	private ClassInfo parentClass;
+	private final ClassInfo parentClass;
+    private final List<String> parameters = new ArrayList<>();
     
-    public MethodInfo(String name, ClassInfo parent) {
-    	super(name);
-    	setParentClass(parent);
-    }
-    
-    public MethodInfo(String name) {
-    	this(name,null);
-    }
-    
-    public MethodInfo withClass(ClassInfo parent) {
-    	setParentClass(parent);
-    	return this;
-    }
-    
-    public MethodInfo withCompilation(MethodDeclaration node) {
-		Objects.requireNonNull(node);
-		setCompilationUnit((CompilationUnit) node.getRoot());
-		this.unit_firstCharPos = node.getStartPosition();
-		this.unit_lastCharPos = node.getLength() + unit_firstCharPos -1;
-		this.unit_firstLineNum = unit.getLineNumber(unit_firstCharPos);
-		this.unit_lastLineNum = unit.getLineNumber(unit_lastCharPos);
-		return this;
+    public MethodInfo(MethodDeclaration node, ClassInfo parentClass) {
+		super(Objects.requireNonNull(node),node.getName().getIdentifier());
+		this.parentClass = Objects.requireNonNull(parentClass, "Class cannot be null for '"+name+"' method");
     }
     
     public ClassInfo getParentClass() {return parentClass;}
     
-    public void setParentClass(ClassInfo parent) {
-    	this.parentClass = parent;
-    }
+    public String getClassName() {return parentClass.getName();}
     
-    public String getReturnType() {return this.returnType;}
+    public String getReturnType() {return node.getReturnType2().toString();}
 
-	public void setReturnType(String returnType) {
-		String old = this.returnType;
-		this.returnType = returnType;
-		logger.debug("Change value of 'returnType': %s -> %s".formatted(old,this.returnType));
-	}
+	public boolean isConstructor() {return node.isConstructor();}
 
-	public boolean isConstructor() {return this.isConstructor;}
-
-	public void setIsConstructor(boolean isConstructor) {
-		boolean old = this.isConstructor;
-		this.isConstructor = isConstructor;
-		logger.debug("Change value of 'isConstructor': %s -> %s".formatted(old,this.isConstructor));
-	}
-
-	public List<String> getParameters() {return Collections.unmodifiableList(this.parameters);}
+	public List<String> getParameters() {return Collections.unmodifiableList(parameters);}
 	
-	public List<String> copyParameters() {return new ArrayList<>(this.parameters);}
+	public List<String> copyParameters() {return new ArrayList<>(parameters);}
 
-	public void addParameter(String parameter) {
-		if (parameter!=null && !parameter.isBlank() && !this.parameters.contains(parameter) &&	this.parameters.add(parameter))
+	public boolean addParameter(String parameter) {
+		if (parameter!=null && !parameter.isBlank() && !parameters.contains(parameter) && parameters.add(parameter)) {
 			logger.debug("Parameter added: %s".formatted(parameter));
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean removeParameter(String parameter) {
+		if (parameter!=null && parameters.remove(parameter)) {
+			logger.debug("Parameter removed: %s".formatted(parameter));
+			return true;
+		}
+		return false;
 	}
 	
 	@Override
@@ -81,6 +55,11 @@ public class MethodInfo extends NodeInfo {
 			getName()+
 			"("+String.join(", ",getParameters())+")"
 		;
+	}
+	
+	@Override
+	public String getShortSignature() {
+		return getClassName()+"::"+getName();
 	}
 	
 	@Override
@@ -93,13 +72,16 @@ public class MethodInfo extends NodeInfo {
 		MethodInfo that = (MethodInfo) obj;
 		return 
 			Objects.equals(this.getSignature(), that.getSignature()) &&
-			Objects.equals(this.returnType, that.returnType)
+			Objects.equals(this.getClassName(), that.getClassName()) &&
+			Objects.equals(this.getReturnType(), that.getReturnType()) &&
+			Objects.equals(this.isConstructor(), that.isConstructor()) &&
+			Objects.equals(this.parameters.size(), that.parameters.size())
 		;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(getSignature(), returnType);
+		return Objects.hash(getSignature(), getClassName(), getReturnType(), isConstructor(), parameters.size());
 	}
 
 	@Override
@@ -114,13 +96,13 @@ public class MethodInfo extends NodeInfo {
 				+ "isFinal=%s, "
 				+ "parameters=%d}")
 				.formatted(
-					this.getVisibility().name(),
-					this.getName(),
-					returnType,
-					String.valueOf(isConstructor),
-					String.valueOf(this.isStatic()),
-					String.valueOf(this.isAbstract()),
-					String.valueOf(this.isFinal()),
+					getVisibility().name(),
+					getName(),
+					getReturnType(),
+					String.valueOf(isConstructor()),
+					String.valueOf(isStatic()),
+					String.valueOf(isAbstract()),
+					String.valueOf(isFinal()),
 					parameters.size()
 				);
 	}

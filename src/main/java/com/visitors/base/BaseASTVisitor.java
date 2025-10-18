@@ -42,9 +42,9 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 		return visitAndExtract(compilationUnit, null);
 	}
 	
-	protected void preVisit(Object context) {}
+	protected abstract void preVisit(Object context);
 	
-	protected void afterVisit() {}
+	protected abstract void afterVisit();
 	
 	public VisitorResult getResult() {return this.result;}
 	

@@ -1,7 +1,6 @@
 package com.visitors.structural;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -47,10 +46,6 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		this.result = new VisitorResult(getVisitorName());
 	}
 	
-	public List<ClassInfo> getClasses() {return Collections.unmodifiableList(classes);}
-	
-	public List<ClassInfo> copyClasses() {return new ArrayList<>(classes);}
-	
 	@Override
 	public String getVisitorName() {
 		return "ClassStructureVisitor";
@@ -68,16 +63,12 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(TypeDeclaration node) {
-		this.currentClass = new ClassInfo(node.getName().getIdentifier())
-				.withPackage(currentPackage)
-				.withCompilationUnit(node);
-		currentClass.setInterface(node.isInterface());
-		if (node.getSuperclassType()!=null) 
-			currentClass.setSuperClass(node.getSuperclassType().toString());
+		this.currentClass = new ClassInfo(node, currentPackage);
+		
 		for (Object interfaceType : node.superInterfaceTypes()) {
 			currentClass.addInterface(interfaceType.toString());
 		}
-		currentClass.setDefinedModifiers(node.getModifiers());
+		currentClass.setModifiers(node.getModifiers());
 		logger.trace("Visited Class: "+currentClass);
 		
 		this.classes.add(currentClass);
@@ -88,19 +79,13 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	public boolean visit(MethodDeclaration node) {
 		if (this.currentClass==null) return MethodExploreChildren;
 		
-		MethodInfo method = new MethodInfo(node.getName().getIdentifier())
-				.withClass(currentClass)
-				.withCompilation(node);
-		method.setIsConstructor(node.isConstructor());
+		MethodInfo method = new MethodInfo(node, currentClass);
 		for (Object param : node.parameters()) {
 			if (param instanceof SingleVariableDeclaration) {
 				method.addParameter(((SingleVariableDeclaration) param).getName().getIdentifier());
 			}
 		}
-		method.setDefinedModifiers(node.getModifiers());
-        if (!method.isConstructor() && node.getReturnType2()!=null) {
-            method.setReturnType(node.getReturnType2().toString());
-        }
+		method.setModifiers(node.getModifiers());
 		logger.trace("Visited Method: "+method);
         
 		this.methods.add(method);
@@ -110,15 +95,13 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(FieldDeclaration node) {
-		if (this.currentClass==null) return MethodExploreChildren;
+		if (this.currentClass==null) return FieldExploreChildren;
 		
 		String fieldType = node.getType().toString();
 		for (Object fragmentObj : node.fragments()) {
 			if (fragmentObj instanceof VariableDeclarationFragment) {
-				FieldInfo field = new FieldInfo(((VariableDeclarationFragment) fragmentObj).getName().getIdentifier());
-				field.setType(fieldType);
-
-				field.setDefinedModifiers(node.getModifiers());
+				FieldInfo field = new FieldInfo((VariableDeclarationFragment) fragmentObj, currentClass, fieldType);
+				field.setModifiers(node.getModifiers());
 				logger.trace("Visited Field: "+field);
 				
 				this.fields.add(field);
@@ -134,13 +117,20 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		if (context==null) return;
 		else if (context.getClass() == PackageInfo.class) {
 			this.currentPackage = (PackageInfo) context;
+			logger.debug("Visiting in package '{}'...",currentPackage.getName());
 		} else return;
 	}
 	
 	@Override
 	protected void afterVisit() {
-	    this.result.addData("classes", new ArrayList<>(this.classes));
+		if (currentPackage!=null)
+			logger.debug("End of visit in package '{}':",currentPackage.getName());
+	    result.addData("classes", classes);
 	    logger.debug("Extracted %d classes".formatted(classes.size()));
+	    result.addData("methods", methods);
+	    logger.debug("Extracted %d methods".formatted(methods.size()));
+	    result.addData("fields", fields);
+	    logger.debug("Extracted %d fields".formatted(fields.size()));
 	}
 	
 	@Override
@@ -152,14 +142,14 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		
 		ClassStructureVisitor that = (ClassStructureVisitor) obj;
 		return 
-			Objects.equals(this.result, that.result) &&
-			Objects.equals(this.classes, that.classes)
+			Objects.equals(this.getVisitorName(), that.getVisitorName()) &&
+			Objects.equals(this.result, that.result)
 		;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(result, classes);
+		return Objects.hash(getVisitorName(), result);
 	}
 	
 	@Override
@@ -167,8 +157,15 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "classes=%d, "
+				+ "methods=%d, "
+				+ "fields=%d, "
 				+ "result=%s}")
-				.formatted(this.getVisitorName(), classes.size(), this.getResult());
+				.formatted(
+					getVisitorName(),
+					classes.size(),
+					methods.size(),
+					fields.size(),
+					getResult());
 	}
 
 }

@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.core.exceptions.ExplorationError;
+import com.model.project.PackageInfo;
 import com.model.project.ProjectInfo;
 import com.utils.table.TableUI;
 
@@ -117,7 +118,7 @@ public class ProjectExplorer {
 		logger.debug("Change value of 'maxDepth': %s -> %s".formatted(old,this.maxDepth));
 	}
 	
-	public void setupCurrentProject(Path rootPath) throws IOException {
+	public Path setupCurrentProject(Path rootPath) throws IOException {
 		if (rootPath == null)
 			throw new IllegalArgumentException("Root path cannot be null");
 		if (!Files.exists(rootPath))
@@ -130,6 +131,7 @@ public class ProjectExplorer {
 		Path old = this.currentProjectRootPath;
 		this.currentProjectRootPath = findSourceRoot(rootPath);
 		logger.debug("Change value of 'currentProjectRootPath': %s -> %s".formatted(old,this.currentProjectRootPath));
+		return currentProjectRootPath;
 	}
 	
 	public void startCurrentProjectTimer() {
@@ -144,7 +146,6 @@ public class ProjectExplorer {
 
 	public List<File> exploreDirectory(Path rootPath) throws IOException {
 		startCurrentProjectTimer();
-		setupCurrentProject(rootPath);
 
 		List<File> result = new ArrayList<>();
 		Files.walkFileTree(currentProjectRootPath, EnumSet.of(FileVisitOption.FOLLOW_LINKS), maxDepth, new SimpleFileVisitor<Path>() {
@@ -208,7 +209,16 @@ public class ProjectExplorer {
 			exploreDirectory(rootPath);
 		else
 			groupAllFilesByPackage(javaFiles);
-		return new ProjectInfo(projectName, currentProjectRootPath, currentProjectGroupedFilesByPackage);
+		ProjectInfo project = new ProjectInfo(projectName, currentProjectRootPath);
+		for (String packageName : currentProjectGroupedFilesByPackage.keySet()) {
+			PackageInfo packageInfo = new PackageInfo(packageName,project);
+			project.addPackage(packageInfo);
+			for (File file : currentProjectGroupedFilesByPackage.get(packageName)) {
+				packageInfo.addUnit(file.getPath(), null);
+			}
+		}
+		project.buildPackagesHierarchy();
+		return project;
 	}
 	
 	public ProjectInfo buildJavaProject(String projectName, Path rootPath) throws IOException {

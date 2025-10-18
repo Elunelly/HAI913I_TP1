@@ -1,4 +1,4 @@
-package com.model.interfaces;
+package com.model.utils;
 
 import java.util.ArrayList;
 import java.util.Collections;

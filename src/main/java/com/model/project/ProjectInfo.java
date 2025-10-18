@@ -1,166 +1,182 @@
 package com.model.project;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.model.interfaces.HasClasses;
-import com.model.interfaces.ModelInfo;
 import com.model.structural.ClassInfo;
+import com.model.structural.FieldInfo;
+import com.model.structural.MethodInfo;
 
-public class ProjectInfo implements ModelInfo, HasClasses {
+public class ProjectInfo extends ProjectNode {
 	
 	private static final Logger logger = LoggerFactory.getLogger(ProjectInfo.class);
 	
-	private final String name;
 	private final Path rootPath;
-	private final Map<String,List<File>> fileRepository = new HashMap<>();
-	private final Map<PackageInfo,List<CompilationUnit>> unitRepository = new HashMap<>();
-	// derived
 	private final Map<String,PackageInfo> packages = new HashMap<>();
-	private final List<ClassInfo> classes = new ArrayList<>();
-	private final Map<String,ClassInfo> classIndex = new HashMap<>();
-	private final List<CompilationUnit> compilationUnits = new ArrayList<>();
 	
-	public ProjectInfo(String name, Path rootPath, Map<String,List<File>> packagedFiles) {
-		if (rootPath==null)
-			rootPath = Path.of("");
-		if (name==null || name.isBlank())
-			name = rootPath.getFileName().toString();
-		this.name = name.trim();
+	public ProjectInfo(String name, Path rootPath) {
+		super(checkName(name,rootPath));
 		logger.debug("Setting project name: "+this.name);
-		this.rootPath = rootPath;
+		this.rootPath = checkRootPath(rootPath);
 		logger.debug("Setting project root: "+this.rootPath);
-		setupProjectWithFiles(packagedFiles);
 	}
 	
 	public ProjectInfo(String name) {
-		this(name, null, null);
+		this(name, null);
 	}
 	
 	public ProjectInfo(Path rootPath) {
-		this(null, rootPath, null);
+		this(null, rootPath);
 	}
 	
 	public ProjectInfo() {
-		this(null, null, null);
+		this(null, null);
 	}
 	
-	private void setupProjectWithFiles(Map<String,List<File>> packagedFiles) {
-		this.fileRepository.clear();
-		if (packagedFiles.isEmpty()) {
-			logger.warn("Project is initialized without any files");
-			return;
-		}
-		this.fileRepository.putAll(packagedFiles);
-		logger.debug("Filling up project files hierarchy: "+this.fileRepository.size());
-		for (Map.Entry<String,List<File>> packageStructure : this.fileRepository.entrySet()) {
-			String packageName = packageStructure.getKey();
-			PackageInfo packageInfo = new PackageInfo(packageName, this);
-			addPackage(packageInfo);
-		}
-		buildPackagesHierarchy();
+	private static String checkName(String name, Path rootPath) {
+		rootPath = checkRootPath(rootPath);
+		if (name==null || name.isBlank())
+			name = rootPath.getFileName().toString();
+		return name.trim();
 	}
 	
-	public void associateCompilationUnits(Map<File,CompilationUnit> compilationUnits) {
-		for (Map.Entry<String,List<File>> entry : this.fileRepository.entrySet()) {
-			String packageName = entry.getKey();
-			List<File> packageFiles = entry.getValue();
-			PackageInfo packageInfo = packages.get(packageName);
-			if (packageInfo==null) {
-				logger.warn("{} is not registered in 'packages'",packageName);
-				continue;
-			}
-			List<CompilationUnit> packageUnits = unitRepository.get(packageInfo);
-			if (packageUnits==null) {
-				logger.warn("{} is different from {} in 'CompilationUnits Repository'",packageName,packageInfo);
-				continue;
-			}
-			List<CompilationUnit> result = packageFiles.stream()
-					.filter(compilationUnits::containsKey)
-					.map(compilationUnits::get)
-					.toList();
-			packageUnits.clear();
-			if (packageUnits.addAll(result)) {
-				logger.debug("Successfully associated {} CompilationUnit on '{}'",result.size(),packageName);
-			} else {
-				logger.error("Error on associating {} CompilationUnit on '{}'",result.size(),packageName);
-			}
-		}
+	private static Path checkRootPath(Path rootPath) {
+		if (rootPath==null)
+			rootPath = Path.of("");
+		return rootPath;
 	}
+	
+//	private void setupProjectWithFiles(Map<String,List<File>> packagedFiles) {
+//		this.fileRepository.clear();
+//		if (packagedFiles.isEmpty()) {
+//			logger.warn("Project is initialized without any files");
+//			return;
+//		}
+//		this.fileRepository.putAll(packagedFiles);
+//		logger.debug("Filling up project files hierarchy: "+this.fileRepository.size());
+//		for (Map.Entry<String,List<File>> packageStructure : this.fileRepository.entrySet()) {
+//			String packageName = packageStructure.getKey();
+//			PackageInfo packageInfo = new PackageInfo(packageName, this);
+//			addPackage(packageInfo);
+//		}
+//		buildPackagesHierarchy();
+//	}
+	
+//	public void associateCompilationUnits(Map<File,CompilationUnit> compilationUnits) {
+//		for (Map.Entry<String,List<File>> entry : this.fileRepository.entrySet()) {
+//			String packageName = entry.getKey();
+//			List<File> packageFiles = entry.getValue();
+//			PackageInfo packageInfo = packages.get(packageName);
+//			if (packageInfo==null) {
+//				logger.warn("{} is not registered in 'packages'",packageName);
+//				continue;
+//			}
+//			List<CompilationUnit> packageUnits = unitRepository.get(packageInfo);
+//			if (packageUnits==null) {
+//				logger.warn("{} is different from {} in 'CompilationUnits Repository'",packageName,packageInfo);
+//				continue;
+//			}
+//			List<CompilationUnit> result = packageFiles.stream()
+//					.filter(compilationUnits::containsKey)
+//					.map(compilationUnits::get)
+//					.toList();
+//			packageUnits.clear();
+//			if (packageUnits.addAll(result)) {
+//				logger.debug("Successfully associated {} CompilationUnit on '{}'",result.size(),packageName);
+//			} else {
+//				logger.error("Error on associating {} CompilationUnit on '{}'",result.size(),packageName);
+//			}
+//		}
+//	}
 	
 	public String getName() {return this.name;}
+	
+	// ROOT PATH
 	
 	public String getFullName() {return this.rootPath.toString();}
 	
 	public Path getRootPath() {return this.rootPath;}
 	
-	public Map<String,PackageInfo> getMappedPackages() {return Collections.unmodifiableMap(this.packages);}
+	// PACKAGES
 	
-	public Map<String,PackageInfo> copyMappedPackages() {return new HashMap<>(this.packages);}
+	public Map<String,PackageInfo> getMappedPackages() {return Collections.unmodifiableMap(packages);}
 	
-	public List<PackageInfo> getPackages() {
-		return new ArrayList<>(this.packages.values());
+	public Map<String,PackageInfo> copyMappedPackages() {return new HashMap<>(packages);}
+	
+	public List<PackageInfo> getPackages() {return Collections.unmodifiableList(copyPackages());}
+	
+	public List<PackageInfo> copyPackages() {return new ArrayList<>(packages.values());}
+	
+	public boolean addPackage(PackageInfo packageInfo) {
+		if (packageInfo!=null && packages.putIfAbsent(packageInfo.getName(), packageInfo)==null) {
+			logger.debug("Package added: %s".formatted(packageInfo));
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean addAllPackages(List<PackageInfo> packageInfos) {
+		return packageInfos.stream().filter(p -> addPackage(p)).count() > 0;
+	}
+	
+	public boolean removePackage(PackageInfo packageInfo) {
+		if (packageInfo!=null && packages.remove(packageInfo.getName())!=null) {
+			logger.debug("Package removed: %s".formatted(packageInfo));
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean removeAllPackages(List<PackageInfo> packageInfos) {
+		return packageInfos.stream().filter(p -> removePackage(p)).count() > 0;
 	}
 	
 	public PackageInfo getPackage(String name) {
-		return this.packages.get(name);
+		return packages.get(name);
 	}
 	
-	public List<String> getPackageNames() {
-		return Collections.unmodifiableList(new ArrayList<>(this.packages.keySet()));
-	}
-	
-	public void addPackage(PackageInfo packageInfo) {
-		if (packageInfo==null) return;
-		PackageInfo old = this.packages.putIfAbsent(packageInfo.getName(),packageInfo);
-		this.unitRepository.computeIfAbsent(packageInfo, k -> Collections.emptyList());
-		if (old==null) {
-			logger.debug("Added package '%s': %s".formatted(packageInfo.getName(),packageInfo));
-		} else {
-			logger.debug("Change value of '%s': %s -> %s".formatted(packageInfo.getName(),old,packageInfo));
-		}
-	}
-	
-	public void addAllPackages(Collection<PackageInfo> packageInfos) {
-		for (PackageInfo packageInfo : packageInfos) {
-			addPackage(packageInfo);
-		}
+	public boolean hasPackage(String name) {
+		return getPackage(name) != null;
 	}
 	
 	public boolean hasPackages() {
 		return !this.packages.isEmpty();
 	}
 	
-	public boolean hasPackage(String name) {
-		return name!=null && this.packages.containsKey(name);
+	public void clearPackages() {
+		packages.clear();
+		logger.debug("All Packages removed from: "+getName());
 	}
+	
+	public List<String> getPackagesName() {return Collections.unmodifiableList(copyPackagesName());}
+	
+	public List<String> copyPackagesName() {return new ArrayList<>(packages.keySet());}
+	
+	// UTILITIES
     
     public void buildPackagesHierarchy() {
-        List<String> sortedPackageNames = new ArrayList<>(this.packages.keySet());
-        sortedPackageNames.sort(Comparator.comparingInt(name -> name.split("\\.").length));
+        List<PackageInfo> sortedPackageNames = copyPackages();
+        sortedPackageNames.sort(Comparator.comparingInt(p -> p.getDepth()));
         
-        for (String packageName : sortedPackageNames) {
+        for (PackageInfo child : sortedPackageNames) {
+        	String packageName = child.getName();
             if (packageName.isEmpty()) continue;
             
             int lastDot = packageName.lastIndexOf('.');
             if (lastDot > 0) {
                 String parentName = packageName.substring(0, lastDot);
                 PackageInfo parent = this.packages.get(parentName);
-                PackageInfo child = this.packages.get(packageName);
-                child.setParentPackage(parent);                
+                child.setParentPackage(parent);
                 if (parent != null && child != null) {
                     parent.addSubPackage(child);
 				}
@@ -168,48 +184,32 @@ public class ProjectInfo implements ModelInfo, HasClasses {
 		}
 	}
     
-    public List<ClassInfo> classes() {return classes;}
-	
-	public List<ClassInfo> getClassesByPackage(String name) {
-		return this.classes.stream()
-				.filter(c -> c.getPackageName().equalsIgnoreCase(name))
-				.collect(Collectors.toUnmodifiableList());
-	}
-	
-	public Map<PackageInfo,List<CompilationUnit>> getCompilationUnitsByPackages() {
-		return Collections.unmodifiableMap(this.unitRepository);
-	}
-	
-	public List<CompilationUnit> getCompilationUnits() {return Collections.unmodifiableList(this.compilationUnits);}
-	
-	public List<CompilationUnit> copyCompilationUnits() {return new ArrayList<>(this.compilationUnits);}
-	
-	public void addCompilationUnit(CompilationUnit compilationUnit) {
-		if (compilationUnit!=null && !this.compilationUnits.contains(compilationUnit)) {
-			this.compilationUnits.add(compilationUnit);
-			logger.debug("Added CompilationUnit: "+compilationUnit);
-		}
-	}
-	
-	public void addAllCompilationUnits(Collection<CompilationUnit> compilationUnits) {
-		for (CompilationUnit compilationUnit : compilationUnits) {
-			addCompilationUnit(compilationUnit);
-		}
-	}
-	
-	
-	
-	public boolean hasClasses() {
-		return !this.classes.isEmpty();
-	}
-	
-	public void clear() {
-		this.packages.clear();
-		this.classes.clear();
-		this.classIndex.clear();
-		this.compilationUnits.clear();
-		logger.debug("Cleared JavaProject (packages, classes, compilationUnits): "+this.name);
-	}
+    public void buildCompilationUnitsAssociation(Map<String,CompilationUnit> units) {
+    	for (PackageInfo packageInfo : packages.values()) {
+    		List<String> result = units.keySet().stream()
+    				.filter(path -> packageInfo.hasUnit(path))
+    				.toList();
+    		for (String path : result) {
+    			packageInfo.setUnit(path, units.get(path));
+    		}
+    	}
+    }
+    
+    public List<CompilationUnit> getAllUnits() {
+    	return getPackages().stream().flatMap(p -> p.getUnits().stream()).toList();
+    }
+    
+    public List<ClassInfo> getAllClasses() {
+    	return getPackages().stream().flatMap(p -> p.getClasses().stream()).toList();
+    }
+    
+    public List<MethodInfo> getAllMethods() {
+    	return getPackages().stream().flatMap(p -> p.getAllMethods().stream()).toList();
+    }
+    
+    public List<FieldInfo> getAllFields() {
+    	return getPackages().stream().flatMap(p -> p.getAllFields().stream()).toList();
+    }
 	
 	@Override
 	public boolean equals(Object obj) {
@@ -221,16 +221,14 @@ public class ProjectInfo implements ModelInfo, HasClasses {
 		ProjectInfo that = (ProjectInfo) obj;
 		return 
 			Objects.equals(this.name, that.name) &&
-			Objects.equals(this.rootPath, that.rootPath) &&
-			Objects.equals(this.packages, that.packages) &&
-			Objects.equals(this.classes, that.classes) &&
-			Objects.equals(this.compilationUnits, that.compilationUnits)
+			Objects.equals(this.getFullName(), that.getFullName()) &&
+			Objects.equals(this.packages.size(), that.packages.size())
 		;
 	}
 	
 	@Override
 	public int hashCode() {
-		return Objects.hash(name, rootPath, packages, classes, compilationUnits);
+		return Objects.hash(name, getFullName(), packages.size());
 	}
 	
 	@Override
@@ -241,7 +239,13 @@ public class ProjectInfo implements ModelInfo, HasClasses {
         		+ "packages=%d, "
         		+ "classes=%d, "
         		+ "compilationUnits=%d}")
-        		.formatted(name, rootPath, packages.size(), classes.size(), compilationUnits.size());
+        		.formatted(
+        			name,
+        			getFullName(),
+        			packages.size(),
+        			getAllClasses().size(),
+        			getAllUnits().size()
+        		);
     }
 
 }
