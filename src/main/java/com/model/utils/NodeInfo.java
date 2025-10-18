@@ -14,10 +14,10 @@ public abstract class NodeInfo implements ModelInfo {
 	
 	public NodeInfo(String name) {
 		this.name = Objects.requireNonNull(name, "Name cannot be null").trim();
-		if (this.name.isBlank()) {
-			logger.error("Name cannot be empty");
-			throw new IllegalArgumentException("Name cannot be empty");
-		}
+//		if (this.name.isBlank()) {
+//			logger.error("Name cannot be empty");
+//			throw new IllegalArgumentException("Name cannot be empty");
+//		}
 	}
 
 	public String getName() {return name;}

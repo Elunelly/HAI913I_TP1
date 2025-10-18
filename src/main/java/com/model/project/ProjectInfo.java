@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
+import com.utils.table.TableUI;
 
 public class ProjectInfo extends ProjectNode {
 	
@@ -47,7 +49,7 @@ public class ProjectInfo extends ProjectNode {
 		rootPath = checkRootPath(rootPath);
 		if (name==null || name.isBlank())
 			name = rootPath.getFileName().toString();
-		return name.trim();
+		return name.trim().isEmpty() ? "MyDefaultProject" : name.trim();
 	}
 	
 	private static Path checkRootPath(Path rootPath) {
@@ -185,13 +187,14 @@ public class ProjectInfo extends ProjectNode {
 	}
     
     public void buildCompilationUnitsAssociation(Map<String,CompilationUnit> units) {
-    	for (PackageInfo packageInfo : packages.values()) {
-    		List<String> result = units.keySet().stream()
-    				.filter(path -> packageInfo.hasUnit(path))
-    				.toList();
-    		for (String path : result) {
-    			packageInfo.setUnit(path, units.get(path));
-    		}
+    	logger.debug("\n"+packages.keySet().stream().collect(Collectors.joining("\n")));
+    	for (Map.Entry<String,CompilationUnit> entry : units.entrySet()) {
+    		String fullName = entry.getKey();
+    		String packageName = fullName.substring(0, fullName.lastIndexOf("."));
+    		logger.debug("fullName={}, packageName={} ({})",fullName,packageName,packages.containsKey(packageName));
+    		PackageInfo packageInfo = packages.get(packageName);
+    		if (packageInfo != null)
+    			packageInfo.addUnit(fullName,entry.getValue());
     	}
     }
     
@@ -247,5 +250,20 @@ public class ProjectInfo extends ProjectNode {
         			getAllUnits().size()
         		);
     }
+	
+	public String toStringTable() {
+		return TableUI.titledTable(
+			this.getClass().getSimpleName(),
+			List.of(
+				new Object[] {"Name", name},
+				new Object[] {"Root", getFullName()},
+				new Object[] {"Packages", packages.size()},
+				new Object[] {"Units", getAllUnits().size()},
+				new Object[] {"Classes", getAllClasses().size()},
+				new Object[] {"Methods", getAllMethods().size()}
+			),
+			"="
+		);
+	}
 
 }

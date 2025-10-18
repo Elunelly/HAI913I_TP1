@@ -100,7 +100,7 @@ public class TableUI {
 		TableUI.alignValue = alignValue;
 	}
 	
-	public static String titledTable(String title, List<String[]> data, String sep) {
+	public static String titledTable(String title, List<Object[]> data, String sep) {
 		return 
 			tableTitle(title,3)+
 			tableDataRows(data,sep,2)
@@ -125,7 +125,7 @@ public class TableUI {
 		return s;
 	}
 	
-	public static String tableDataRows(List<String[]> data, String sep, int flag) {
+	public static String tableDataRows(List<Object[]> data, String sep, int flag) {
 		int tableWidth = dimension-2;
 		String s = "";
 		int bit = 0;
@@ -134,9 +134,9 @@ public class TableUI {
 		if (BinaryHandler.bitEquals(flag,bit++)) {
 			s+=TextColor.format("\n+"+"-".repeat(tableWidth)+"+", formatLine);
 		}
-		for (String[] row : data) {
-			String key = row.length>0?row[0]:"";
-			String val = row.length>1?TextHandler.strCutBefore(row[1],valWidth):""; // deleted -1 on valWidth
+		for (Object[] row : data) {
+			String key = row.length>0?row[0].toString():"";
+			String val = row.length>1?TextHandler.strCutBefore(row[1].toString(),valWidth):""; // deleted -1 on valWidth
 			if (key.isBlank()&&val.isBlank()) {s+=tableDataDelimiter(sep);continue;}
 			s+=TextColor.format("\n|", formatLine);
 			s+=TextColor.format(" "+alignKey.justify(key, keyWidth)+" ", formatFillKey);

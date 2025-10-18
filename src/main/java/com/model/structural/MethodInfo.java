@@ -25,7 +25,7 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
     
     public String getClassName() {return parentClass.getName();}
     
-    public String getReturnType() {return node.getReturnType2().toString();}
+    public String getReturnType() {return node.getReturnType2()==null?"":node.getReturnType2().toString();}
 
 	public boolean isConstructor() {return node.isConstructor();}
 

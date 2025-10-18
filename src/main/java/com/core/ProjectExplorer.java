@@ -213,9 +213,6 @@ public class ProjectExplorer {
 		for (String packageName : currentProjectGroupedFilesByPackage.keySet()) {
 			PackageInfo packageInfo = new PackageInfo(packageName,project);
 			project.addPackage(packageInfo);
-			for (File file : currentProjectGroupedFilesByPackage.get(packageName)) {
-				packageInfo.addUnit(file.getPath(), null);
-			}
 		}
 		project.buildPackagesHierarchy();
 		return project;

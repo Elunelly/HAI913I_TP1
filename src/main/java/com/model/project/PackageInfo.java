@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
+import com.utils.table.TableUI;
 
 public class PackageInfo extends ProjectNode {
 	
@@ -229,14 +231,6 @@ public class PackageInfo extends ProjectNode {
 		return units.get(name);
 	}
 	
-	public boolean setUnit(String name, CompilationUnit unit) {
-		return 
-			name != null &&
-			hasUnit(name) &&
-			units.put(name, unit)!=null
-		;
-	}
-	
 	public boolean hasUnit(String name) {
 		return getUnit(name) != null;
 	}
@@ -309,6 +303,32 @@ public class PackageInfo extends ProjectNode {
 					subPackages.size(),
 					classes.size()
 				);
+	}
+	
+	public String toStringTable() {
+		return TableUI.titledTable(
+			this.getClass().getSimpleName(),
+			List.of(
+				new Object[] {"Name", name},
+				new Object[] {"Parent", getParentPackageName()},
+				new Object[] {"Sub-packages", subPackages.size()},
+				new Object[] {"Units", units.size()},
+				new Object[] {"Classes", classes.size()}
+			),
+			"="
+		);
+	}
+	
+	public String withUnits() {
+		return units.keySet().stream()
+				.map(u -> TableUI.tableDataRows(
+						List.of(
+							new Object[] {"Name", u},
+							new Object[] {"Size", units.get(u).getLength()}
+						),
+						"->",
+						2))
+				.collect(Collectors.joining());
 	}
 	
 }

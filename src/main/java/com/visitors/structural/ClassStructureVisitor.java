@@ -71,6 +71,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 		currentClass.setModifiers(node.getModifiers());
 		logger.trace("Visited Class: "+currentClass);
 		
+		this.currentPackage.addClass(currentClass);
 		this.classes.add(currentClass);
 		return TypeExploreChildren;
 	}

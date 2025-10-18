@@ -101,7 +101,7 @@ public class MainTemp {
         }
         
         // Default: analyze current project's source code
-        Path currentPath = Path.of("/home/luna/Documents/java");
+        Path currentPath = Path.of("/home/luna/Documents/java/luna.java.utils");
         if (currentPath.toFile().exists()) {
             return currentPath.toString();
         }

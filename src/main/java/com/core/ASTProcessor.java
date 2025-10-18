@@ -196,7 +196,7 @@ public class ASTProcessor {
 		logger.info("[3/5] Parsing all Java files...");
 		List<ASTError> parsingErrors = new ArrayList<>();
 		Map<String,CompilationUnit> compilationUnits = parserFacade.parseFiles(parsingErrors, javaFiles);
-		logger.debug(compilationUnits.keySet().toString());
+		logger.debug(project.copyMappedPackages().toString());
 		project.buildCompilationUnitsAssociation(compilationUnits);
 		logger.debug(project.toString());
 		project.getPackages().stream()

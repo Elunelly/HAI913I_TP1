@@ -69,7 +69,17 @@ public class ASTParserFacade {
 		try {
 			String content = Files.readString(javaFile.toPath());
 			logger.debug("Successfully read the file: {}",javaFile.getName());
-			return Map.entry(javaFile.getPath(),parseString(content, javaFile.getName()));
+			CompilationUnit result = parseString(content, javaFile.getName());
+			String packageName = result.getPackage() != null 
+	                ? result.getPackage().getName().getFullyQualifiedName() 
+	                : "";
+			String fileName = javaFile.getName();
+			return Map.entry(
+					"%s.%s".formatted(
+						packageName,
+						fileName.substring(0, fileName.length()-5)
+					),
+					result);
 		} catch (IOException e) {
 			RuntimeException error = new RuntimeException("Error reading file "+javaFile.getName(), e);
 			logger.error(error.getLocalizedMessage());

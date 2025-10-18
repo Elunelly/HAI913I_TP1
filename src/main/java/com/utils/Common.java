@@ -15,7 +15,7 @@ public class Common {
 		return i;
 	}
 	
-	public static List<String> indexOfArray(List<String[]> array, int ind) {
+	public static List<String> indexOfArray(List<Object[]> array, int ind) {
 		return (List<String>) array.stream().map(x -> x[ind<x.length?ind:ind<0?0:x.length].toString()).collect(Collectors.toList());
 	}
 	

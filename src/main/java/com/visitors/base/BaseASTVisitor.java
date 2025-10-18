@@ -34,6 +34,7 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 			afterVisit();
 		} catch (Exception e) {
 			this.result.setError("Error occured during visit: "+e.getMessage());
+			e.printStackTrace();
 		}
 		return this.result;
 	}
