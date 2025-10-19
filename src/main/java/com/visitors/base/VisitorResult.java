@@ -19,36 +19,48 @@ public class VisitorResult {
 	
 	public VisitorResult(String visitorName) {
 		this.name = visitorName;
+		logger.trace("{} -> VisitorResult(String)",name);
 	}
 	
 	public void addData(String key, Object value) {
+		logger.trace("{} -> addData(String,Object)",name);
 		Object old = data.get(key);
 		data.put(key, value);
 		if (old==null)
-			logger.debug("Added entry: '"+key+"'="+value);
+			logger.debug("Added entry: '"+key+"'");
 		else
-			logger.debug("Change value of '%s': %s -> %s".formatted(key,old,value));
+			logger.debug("Change value of '%s'".formatted(key));
 	}
 	
 	public Object getDataBy(String key) {
+		logger.trace("{} -> getDataBy(String)",name);
 		return this.data.get(key);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public <T> T getDataBy(String key, Class<T> type) {
+		logger.trace("{} -> getDataBy(String,Class<T>)",name);
 		Object value = getDataBy(key);
 		if (value!=null && type.isInstance(value)) return (T) value;
 		return null;
 	}
 	
 	public boolean containsKey(String key) {
+		logger.trace("{} -> containsKey(String)",name);
 		return this.data.containsKey(key);
 	}
 	
-	public Map<String,Object> getData() {return Collections.unmodifiableMap(this.data);}
-	public Map<String,Object> copyData() {return new HashMap<>(this.data);}
+	public Map<String,Object> getData() {
+		logger.trace("{} -> getData()",name);
+		return Collections.unmodifiableMap(this.data);
+	}
+	public Map<String,Object> copyData() {
+		logger.trace("{} -> copyData()",name);
+		return new HashMap<>(this.data);
+	}
 	
 	public void setError(String errorMessage) {
+		logger.trace("{} -> setError(String)",name);
 		this.isSuccess = errorMessage==null || errorMessage.isEmpty();
 		this.errorMessage = errorMessage;
 		if (!isSuccess)
@@ -57,14 +69,24 @@ public class VisitorResult {
 			logger.debug("Reset on no-error");
 	}
 	
-	public String getVisitorName() {return this.name;}
+	public String getVisitorName() {
+		logger.trace("{} -> getVisitorName()",name);
+		return this.name;
+	}
 	
-	public boolean isSuccessful() {return this.isSuccess;}
+	public boolean isSuccessful() {
+		logger.trace("{} -> isSuccessful()",name);
+		return this.isSuccess;
+	}
 	
-	public String getErrorMessage() {return this.errorMessage;}
+	public String getErrorMessage() {
+		logger.trace("{} -> getErrorMessage()",name);
+		return this.errorMessage;
+	}
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",name);
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -80,11 +102,13 @@ public class VisitorResult {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",name);
 		return Objects.hash(name, data, isSuccess);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",name);
 		return (this.getClass().getSimpleName()+"{"
 				+ "Visitorname=%s, "
 				+ "successful=%s, "

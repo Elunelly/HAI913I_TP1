@@ -38,30 +38,41 @@ public class ASTProcessor {
 	
 	public ASTProcessor() {
 		this(null, null, null);
+		logger.trace("{} -> ASTProcessor()");
 	}
 	
 	public ASTProcessor(ProjectExplorer explorer, ASTParserFacade parserFacade, StatisticsCalculator calculator) {
+		logger.trace("{} -> ASTProcessor(ProjectExplorer,ASTParserFacade,StatisticsCalculator)");
 		setASTParserFacade(parserFacade);
 		setProjectExplorer(explorer);
 		setCalculator(calculator);
 	}
 	
 	public void reset() {
+		logger.trace("{} -> reset()");
 		clearVisitors();
 		clearExtractors();
 		clearErrors();
 	}
 	
-	public List<BaseASTVisitor> getVisitors() {return Collections.unmodifiableList(visitors);}
+	public List<BaseASTVisitor> getVisitors() {
+		logger.trace("{} -> getVisitors()");
+		return Collections.unmodifiableList(visitors);
+	}
 	
-	public List<BaseASTVisitor> copyVisitors() {return new ArrayList<>(visitors);}
+	public List<BaseASTVisitor> copyVisitors() {
+		logger.trace("{} -> copyVisitors()");
+		return new ArrayList<>(visitors);
+	}
 	
 	public void addVisitor(BaseASTVisitor visitor) {
+		logger.trace("{} -> addVisitor(BaseASTVisitor)");
 		if (visitor!=null && !visitors.contains(visitor) && visitors.add(visitor))
 			logger.debug("Visitor added: %s".formatted(visitor.getResult()));
 	}
 	
 	public boolean removeVisitor(BaseASTVisitor visitor) {
+		logger.trace("{} -> removeVisitor(BaseASTVisitor)");
 		boolean result = visitors.remove(visitor);
 		if (result)
 			logger.debug("Visitor removed: %s".formatted(visitor.getResult()));
@@ -69,20 +80,29 @@ public class ASTProcessor {
 	}
 	
 	private void clearVisitors() {
+		logger.trace("{} -> clearVisitors()");
 		visitors.clear();
 		logger.debug("Cleared visitors List");
 	}
 	
-	public List<MetricExtractor<?>> getExtractors() {return Collections.unmodifiableList(extractors);}
+	public List<MetricExtractor<?>> getExtractors() {
+		logger.trace("{} -> getExtractors()");
+		return Collections.unmodifiableList(extractors);
+	}
 	
-	public List<MetricExtractor<?>> copyExtractors() {return new ArrayList<>(extractors);}
+	public List<MetricExtractor<?>> copyExtractors() {
+		logger.trace("{} -> copyExtractors()");
+		return new ArrayList<>(extractors);
+	}
 	
 	public void addExtractor(MetricExtractor<?> extractor) {
+		logger.trace("{} -> addExtractor(MetricExtractor<?>)");
 		if (extractor!=null && !extractors.contains(extractor) && extractors.add(extractor))
 			logger.debug("Extractor added: %s".formatted(extractor));
 	}
 	
 	public boolean removeExtractor(MetricExtractor<?> extractor) {
+		logger.trace("{} -> removeExtractor(MetricExtractor<?>)");
 		boolean result = extractors.remove(extractor);
 		if (result)
 			logger.debug("Extractor removed: %s".formatted(extractor));
@@ -90,49 +110,71 @@ public class ASTProcessor {
 	}
 	
 	private void clearExtractors() {
+		logger.trace("{} -> clearExtractors()");
 		extractors.clear();
 		logger.debug("Cleared extractors List");
 	}
 	
-	public ASTParserFacade getASTParserFacade() {return parserFacade;}
+	public ASTParserFacade getASTParserFacade() {
+		logger.trace("{} -> getASTParserFacade()");
+		return parserFacade;
+	}
 	
 	private void setASTParserFacade(ASTParserFacade parserFacade) {
+		logger.trace("{} -> setASTParserFacade(ASTParserFacade)");
 		ASTParserFacade old = getASTParserFacade();
 		this.parserFacade = parserFacade != null ? parserFacade : ASTParserFacade.createDefault();
 		logger.debug("Change value of 'parserFacade': %s -> %s".formatted(old,this.parserFacade));
 	}
 	
-	public ProjectExplorer getProjectExplorer() {return explorer;}
+	public ProjectExplorer getProjectExplorer() {
+		logger.trace("{} -> getProjectExplorer()");
+		return explorer;
+	}
 	
 	private void setProjectExplorer(ProjectExplorer explorer) {
+		logger.trace("{} -> setProjectExplorer(ProjectExplorer)");
 		ProjectExplorer old = getProjectExplorer();
 		this.explorer = explorer != null ? explorer : new ProjectExplorer().withDefaultExclusions();
 		logger.debug("Change value of 'explorer': %s -> %s".formatted(old,this.explorer));
 	}
 	
-	public StatisticsCalculator getCalculator() {return calculator;}
+	public StatisticsCalculator getCalculator() {
+		logger.trace("{} -> getCalculator()");
+		return calculator;
+	}
 	
 	private void setCalculator(StatisticsCalculator calculator) {
+		logger.trace("{} -> setCalculator(StatisticsCalculator)");
 		StatisticsCalculator old = getCalculator();
 		this.calculator = calculator != null ? calculator : new StatisticsCalculator();
 		logger.debug("Change value of 'calculator': %s -> %s".formatted(old,this.calculator));
 	}
 	
-	public List<ASTError> getErrors() {return Collections.unmodifiableList(errors);}
+	public List<ASTError> getErrors() {
+		logger.trace("{} -> getErrors()");
+		return Collections.unmodifiableList(errors);
+	}
 	
-	public List<ASTError> copyErrors() {return new ArrayList<>(errors);}
+	public List<ASTError> copyErrors() {
+		logger.trace("{} -> copyErrors()");
+		return new ArrayList<>(errors);
+	}
 	
 	public void addError(ASTError error) {
+		logger.trace("{} -> addError(ASTError)");
 		if (errors.add(error))
 			logger.debug("Error added: %s".formatted(error));
 	}
 	
 	private void clearErrors() {
+		logger.trace("{} -> clearErrors()");
 		errors.clear();
 		logger.debug("Cleared errors List");
 	}
 	
 	public AnalysisResult processProject(String projectName, Path rootPath) {
+		logger.trace("{} -> processProject(String,Path)");
 		clearErrors();
 		
 		ParseConfiguration config = parserFacade.getConfig();
@@ -141,7 +183,6 @@ public class ASTProcessor {
 			rootPath = explorer.setupCurrentProject(rootPath);
 		} catch (IOException e) {
 			logger.error(e.getMessage());
-			e.printStackTrace();
 			return null;
 		}
 		
@@ -185,7 +226,6 @@ public class ASTProcessor {
 		try {
 			logger.info("[2/5] Building project hierarchy...");
 			project = explorer.buildJavaProject(projectName, rootPath, javaFiles);
-			logger.debug(project.toString());
 			logger.info("End of building");
 		} catch (IOException e) {
 			logger.error(e.getMessage());
@@ -197,18 +237,13 @@ public class ASTProcessor {
 		logger.info("[3/5] Parsing all Java files...");
 		List<ASTError> parsingErrors = new ArrayList<>();
 		Map<String,CompilationUnit> compilationUnits = parserFacade.parseFiles(parsingErrors, javaFiles);
-		logger.debug(project.copyMappedPackages().toString());
 		project.buildCompilationUnitsAssociation(compilationUnits);
-		logger.debug(project.toString());
-		project.getPackages().stream()
-			.forEach(p -> logger.debug("Package: {}\nUnits: {}",p.getName(),p.getMappedUnits()));
 		logger.info("End of parsing files, successfully parsed "+compilationUnits.size()+"/"+javaFiles.size());
 		
 		// STEP 4: Visitor Execution
 		logger.info("[4/5] Executing all visitors...");
 		executeVisitors(project);
 		AnalysisResult result = new AnalysisResult(project);
-		logger.debug(result.toString());
 		logger.info("End of visiting");
 		
 		// STEP 5: Metric Extraction
@@ -220,12 +255,14 @@ public class ASTProcessor {
 	}
 	
 	public AnalysisResult processProject(String rootPath) {
+		logger.trace("{} -> processProject(String)");
 		Path path = Path.of(rootPath);
 		String projectName = path.getFileName().toString();
 		return processProject(projectName, path);
 	}
 	
 	private void executeVisitors(ProjectInfo project) {
+		logger.trace("{} -> executeVisitors(ProjectInfo)");
         if (visitors.isEmpty()) {
         	logger.warn("No visitors registered, using default ClassStructureVisitor");
             ClassStructureVisitor defaultVisitor = new ClassStructureVisitor();
@@ -239,10 +276,12 @@ public class ASTProcessor {
 	}
 	
 	private void calculateMetrics(AnalysisResult result) {
+		logger.trace("{} -> calculateMetrics(AnalysisResult)");
 		// TODO
 	}
 	
     private Collection<VisitorResult> executeVisitor(BaseASTVisitor visitor, ProjectInfo project) {
+		logger.trace("{} -> executeVisitor(BaseVisitor,ProjectInfo)");
 		try {
 			logger.debug("Executing visitor: "+visitor.getVisitorName());
 			return visitor.visit(project);
@@ -255,6 +294,7 @@ public class ASTProcessor {
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)");
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -272,11 +312,13 @@ public class ASTProcessor {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()");
 		return Objects.hash(parserFacade, explorer, calculator, visitors, extractors);
 	}
     
     @Override
     public String toString() {
+		logger.trace("{} -> toString()");
     	return (this.getClass().getSimpleName()+"{"
     			+ "explorer=%s, "
     			+ "parser=%s, "

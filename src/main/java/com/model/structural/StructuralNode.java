@@ -7,6 +7,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.model.HasModifiers;
 import com.model.HasVisibility;
@@ -15,6 +17,8 @@ import com.model.NodeModifiers;
 import com.model.NodeVisibility;
 
 public abstract class StructuralNode<T extends ASTNode> extends NodeInfo implements HasModifiers, HasVisibility {
+    
+    private static final Logger logger = LoggerFactory.getLogger(StructuralNode.class);
 
 	protected final T node;
 	protected NodeVisibility visibility = NodeVisibility.PACKAGE;
@@ -22,46 +26,84 @@ public abstract class StructuralNode<T extends ASTNode> extends NodeInfo impleme
 
 	public StructuralNode(T node, String name) {
 		super(name);
+		logger.trace("{} -> StructuralNode(T,String)",this.name);
 		this.node = Objects.requireNonNull(node, "Node cannot be null");
 	}
 	
-	public T getNode() {return node;}
+	public T getNode() {
+		logger.trace("{} -> getNode()",name);
+		return node;
+	}
 	
-	public boolean isPublic() {return visibility == NodeVisibility.PUBLIC;}
+	public boolean isPublic() {
+		logger.trace("{} -> isPublic()",name);
+		return visibility == NodeVisibility.PUBLIC;
+	}
 	
-	public boolean isProtected() {return visibility == NodeVisibility.PROTECTED;}
+	public boolean isProtected() {
+		logger.trace("{} -> isProtected()",name);
+		return visibility == NodeVisibility.PROTECTED;
+	}
 	
-	public boolean isDefault() {return visibility == NodeVisibility.PACKAGE;}
+	public boolean isDefault() {
+		logger.trace("{} -> isDefault()",name);
+		return visibility == NodeVisibility.PACKAGE;
+	}
 	
-	public boolean isPrivate() {return visibility == NodeVisibility.PRIVATE;}
+	public boolean isPrivate() {
+		logger.trace("{} -> isPrivate()",name);
+		return visibility == NodeVisibility.PRIVATE;
+	}
 	
-	public NodeVisibility getVisibility() {return visibility;}
+	public NodeVisibility getVisibility() {
+		logger.trace("{} -> getVisibility()",name);
+		return visibility;
+	}
 	
 	public void setVisibility(NodeVisibility visibility) {
+		logger.trace("{} -> setVisibility(NodeVisibility)",name);
 		this.visibility = visibility;
 	}
 	
-	public boolean isStatic() {return modifiers.contains(NodeModifiers.STATIC);}
+	public boolean isStatic() {
+		logger.trace("{} -> isStatic()",name);
+		return modifiers.contains(NodeModifiers.STATIC);
+	}
 	
-	public boolean isAbstract() {return modifiers.contains(NodeModifiers.ABSTRACT);}
+	public boolean isAbstract() {
+		logger.trace("{} -> isAbstract()",name);
+		return modifiers.contains(NodeModifiers.ABSTRACT);
+	}
 	
-	public boolean isFinal() {return modifiers.contains(NodeModifiers.FINAL);}
+	public boolean isFinal() {
+		logger.trace("{} -> isFinal()",name);
+		return modifiers.contains(NodeModifiers.FINAL);
+	}
 	
 	public List<NodeModifiers> getModifiers() {
+		logger.trace("{} -> getModifiers()",name);
 		return Collections.unmodifiableList(modifiers);
 	}
 	
 	public boolean setModifiers(int modifierFlag) {
+		logger.trace("{} -> setModifiers(int)",name);
 		setVisibility(NodeVisibility.getFrom(modifierFlag));
 		modifiers.clear();
 		return modifiers.addAll(NodeModifiers.getAllFrom(modifierFlag));
 	}
 	
-	public boolean hasModifiers() {return modifiers.isEmpty();}
+	public boolean hasModifiers() {
+		logger.trace("{} -> hasModifiers()",name);
+		return modifiers.isEmpty();
+	}
 	
-	public boolean hasModifier(NodeModifiers modifier) {return modifiers.contains(modifier);}
+	public boolean hasModifier(NodeModifiers modifier) {
+		logger.trace("{} -> hasModifier(NodeModifiers)",name);
+		return modifiers.contains(modifier);
+	}
 	
 	public String modifiersToString(String sep) {
+		logger.trace("{} -> modifiersToString(String)",name);
 		return !hasModifiers() ?
 			getModifiers().stream().map(NodeModifiers::toString).collect(Collectors.joining(sep)) :
 			""
@@ -69,6 +111,7 @@ public abstract class StructuralNode<T extends ASTNode> extends NodeInfo impleme
 	}
 	
 	public String getFullSignature() {
+		logger.trace("{} -> getFullSignature()",name);
 		return
 			getVisibility().toString()+" "+
 			(hasModifiers() ? modifiersToString()+" " : "")+
@@ -82,6 +125,7 @@ public abstract class StructuralNode<T extends ASTNode> extends NodeInfo impleme
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",name);
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -99,11 +143,13 @@ public abstract class StructuralNode<T extends ASTNode> extends NodeInfo impleme
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",name);
 		return Objects.hash(name, node, visibility, modifiers);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",name);
 		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "node=%s, "

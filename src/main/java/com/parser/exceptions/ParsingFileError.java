@@ -26,21 +26,25 @@ public class ParsingFileError extends ASTError {
 
 	@Override
 	public File getContext() {
+		logger.trace("{} -> getContext()",file.getName());
 		return file;
 	}
 
 	@Override
 	public String getMessage() {
+		logger.trace("{} -> getMessage()",file.getName());
 		return message;
 	}
 
 	@Override
 	public Exception getCause() {
+		logger.trace("{} -> getCause()",file.getName());
 		return cause;
 	}
 
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",file.getName());
 		return String.format(this.getClass().getSimpleName()+" on %s: %s", file.getName(), message);
 	}
 

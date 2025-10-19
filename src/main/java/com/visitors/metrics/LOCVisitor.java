@@ -35,9 +35,11 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	public LOCVisitor() {
 		super();
+		logger.trace("{} -> LOCVisitor()",getVisitorName());
 	}
 	
 	public void reset() {
+		logger.trace("{} -> reset()",getVisitorName());
 		this.currentClass = null;
 		classes.clear();
 		methods.clear();
@@ -51,6 +53,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(PackageDeclaration node) {
+		logger.trace("{} -> visit(PackageDeclaration)",getVisitorName());
 		String packageName = node.getName().getFullyQualifiedName();
 		if (currentPackage==null || !packageName.equals(currentPackage.getName())) {
 			logger.error("PackageInfo '{}' does not have the correct name '{}'",currentPackage.getName(),packageName);
@@ -62,6 +65,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(TypeDeclaration node) {
+		logger.trace("{} -> visit(TypeDeclaration)",getVisitorName());
 		String className = node.getName().getIdentifier();
 		this.currentClass = currentPackage.getClass(className);
 		ClassMetrics metric;
@@ -77,6 +81,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(MethodDeclaration node) {
+		logger.trace("{} -> visit(MethodDeclaration)",getVisitorName());
 		String methodName = node.getName().getIdentifier();
 		MethodMetrics metric;
 		if (this.currentClass==null || !currentClass.hasMethod(methodName)) {
@@ -91,6 +96,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	protected void preVisit(Object context) {
+		logger.trace("{} -> preVisit(Object)",getVisitorName());
 		if (context==null) return;
 		else if (context.getClass() == PackageInfo.class) {
 			this.currentPackage = (PackageInfo) context;
@@ -100,6 +106,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	protected void afterVisit() {
+		logger.trace("{} -> afterVisit()",getVisitorName());
 		if (currentPackage!=null) {
 			logger.debug("End of visit in package '{}':",currentPackage.getName());
 			PackageMetrics metric = currentPackage.getMetrics();
@@ -123,6 +130,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	}
 	
 	private void extractNodeLOC(ASTNode node, NodeMetrics<?> metric) {
+		logger.trace("{} -> extractNodeLOC(ASTNode,NodeMetrics<?>)",getVisitorName());
 		CompilationUnit unit = (CompilationUnit) node.getRoot();
 		int firstCharPos = node.getStartPosition();
 		int lastCharPos = node.getLength() + firstCharPos -1;
@@ -138,6 +146,7 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",getVisitorName());
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -152,11 +161,13 @@ public class LOCVisitor extends BaseASTVisitor {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",getVisitorName());
 		return Objects.hash(getVisitorName(), result);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",getVisitorName());
 		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "classes=%d, "

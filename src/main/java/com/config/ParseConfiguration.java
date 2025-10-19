@@ -49,18 +49,21 @@ public class ParseConfiguration {
     public ParseConfiguration() {}
 
 	public static ParseConfiguration defaultConfig() {
+		logger.trace("{} -> defaultConfig()");
 		return new ParseConfiguration()
 				.withSpecificJREVersion(JAVA_LATEST)
 				.withBindings(true);
 	}
 
 	public static ParseConfiguration fastConfig() {
+		logger.trace("{} -> fastConfig()");
 		return new ParseConfiguration()
 				.withSpecificJREVersion(JAVA_LATEST)
 				.withBindings(false);
 	}
 
 	public static ParseConfiguration testConfig(String defaultUnitName) {
+		logger.trace("{} -> testConfig(String)");
 		return new ParseConfiguration()
 				.withSpecificJREVersion(JAVA_LATEST)
 				.withBindings(true)
@@ -68,12 +71,14 @@ public class ParseConfiguration {
 	}
 
 	public static ParseConfiguration specificJLSConfig(int wantedJLS) {
+		logger.trace("{} -> specificJLSConfig(int)");
 		return new ParseConfiguration()
 				.withSpecificJREVersion(wantedJLS)
 				.withBindings(true);
 	}
 
 	public static ParseConfiguration conservativeJLSConfig() {
+		logger.trace("{} -> conservativeJLSConfig()");
 		return new ParseConfiguration()
 				.withSpecificJREVersion(JAVA_8)
 				.withBindings(true);
@@ -85,27 +90,42 @@ public class ParseConfiguration {
     +-----------------------------------------------------------------------------------------+    
 */
 
-	public int getCurrentJLS() {return currentJLS;}
+	public int getCurrentJLS() {
+		logger.trace("{} -> getCurrentJLS()");
+		return currentJLS;
+	}
 
 	private void setCurrentJLS(int wantedJLS) {
+		logger.trace("{} -> setCurrentJLS(int)");
 		int old = getCurrentJLS();
 		this.currentJLS = JAVA_JLS_LIST.containsValue(wantedJLS) ? wantedJLS : this.currentJLS;
 		logger.debug("Change value of 'currentJLS': %s -> %s".formatted(old,this.currentJLS));
 	}
 
-	public boolean isResolveBindings() {return resolveBindings;}
+	public boolean isResolveBindings() {
+		logger.trace("{} -> isResolveBindings()");
+		return resolveBindings;
+	}
 
 	private void setResolveBindings(boolean resolveBindings) {
+		logger.trace("{} -> setResolveBindings(boolean)");
 		boolean old = isResolveBindings();
 		this.resolveBindings = resolveBindings;
 		logger.debug("Change value of 'resolveBindings': %s -> %s".formatted(old,this.resolveBindings));
 	}
 
-	public List<Path> getClassPaths() {return Collections.unmodifiableList(classPaths);}
+	public List<Path> getClassPaths() {
+		logger.trace("{} -> getClassPaths()");
+		return Collections.unmodifiableList(classPaths);
+	}
 	
-	public List<Path> copyClassPaths() {return new ArrayList<>(classPaths);}
+	public List<Path> copyClassPaths() {
+		logger.trace("{} -> copyClassPaths()");
+		return new ArrayList<>(classPaths);
+	}
 
 	public void addClassPath(Path classPath) {
+		logger.trace("{} -> addClassPath(Path)");
 		if (classPath != null && !classPaths.contains(classPath)) {
 			classPaths.add(classPath);
 			logger.debug("Class Path added: %s".formatted(classPath));
@@ -113,16 +133,24 @@ public class ParseConfiguration {
 	}
 	
 	public void addAllClassPaths(Path... paths) {
+		logger.trace("{} -> addAllClassPaths(Path...)");
 		for (Path path : paths) {
 			addClassPath(path);
 		}
 	}
 
-	public List<Path> getSourcePaths() {return Collections.unmodifiableList(sourcePaths);}
+	public List<Path> getSourcePaths() {
+		logger.trace("{} -> getSourcePaths()");
+		return Collections.unmodifiableList(sourcePaths);
+	}
 	
-	public List<Path> copySourcePaths() {return new ArrayList<>(sourcePaths);}
+	public List<Path> copySourcePaths() {
+		logger.trace("{} -> copySourcePaths()");
+		return new ArrayList<>(sourcePaths);
+	}
 	
 	public void addSourcePath(Path sourcePath) {
+		logger.trace("{} -> addSourcePath(Path)");
 		if (sourcePath != null && !sourcePaths.contains(sourcePath)) {
 			sourcePaths.add(sourcePath);
 			logger.debug("Source Path added: %s".formatted(sourcePath));
@@ -130,14 +158,19 @@ public class ParseConfiguration {
 	}
 	
 	public void addAllSourcePaths(Path... paths) {
+		logger.trace("{} -> addAllSourcePaths(Path...)");
 		for (Path path : paths) {
 			addSourcePath(path);
 		}
 	}
 
-	public String getDefaultUnitName() {return defaultUnitName;}
+	public String getDefaultUnitName() {
+		logger.trace("{} -> getDefaultUnitName()");
+		return defaultUnitName;
+	}
 
 	private void setDefaultUnitName(String defaultUnitName) {
+		logger.trace("{} -> setDefaultUnitName(String)");
 		String old = getDefaultUnitName();
 		this.defaultUnitName = fixJavaFileNamingWithDefault(defaultUnitName);
 		logger.debug("Change value of 'defaultUnitName': %s -> %s".formatted(old,this.defaultUnitName));
@@ -150,21 +183,25 @@ public class ParseConfiguration {
 */
 
 	public ParseConfiguration withSpecificJREVersion(int value) {
+		logger.trace("{} -> withSpecificJREVersion(int)");
     	setCurrentJLS(value);
     	return this;
     }
 
 	public ParseConfiguration withBindings(boolean value) {
+		logger.trace("{} -> withBindings(boolean)");
 		setResolveBindings(value);
 		return this;
 	}
 
 	public ParseConfiguration withClassPaths(Path... paths) {
+		logger.trace("{} -> withClassPaths(Path...)");
 		addAllClassPaths(paths);
 		return this;
 	}
 
 	public ParseConfiguration withClassPaths(String... strPaths) {
+		logger.trace("{} -> withClassPaths(String...)");
 		List<Path> paths = new ArrayList<>();
 		for (String str : strPaths) {
 			paths.add(Path.of(str));
@@ -174,11 +211,13 @@ public class ParseConfiguration {
 	}
 
 	public ParseConfiguration withSourcePaths(Path... paths) {
+		logger.trace("{} -> withSourcePaths(Path...)");
 		addAllSourcePaths(paths);
 		return this;
 	}
 
 	public ParseConfiguration withSourcePaths(String... strPaths) {
+		logger.trace("{} -> withSourcePaths(String...)");
 		List<Path> paths = new ArrayList<>();
 		for (String str : strPaths) {
 			paths.add(Path.of(str));
@@ -188,11 +227,13 @@ public class ParseConfiguration {
 	}
 
 	public ParseConfiguration withDefaultUnitName(String value) {
+		logger.trace("{} -> withDefaultUnitName(String)");
 		setDefaultUnitName(value);
 		return this;
 	}
 	
 	private static Map<String,Integer> setSupportedJLS() {
+		logger.trace("{} -> setSupportedJLS()");
 		List<Integer> allJLS = AST.getAllSupportedVersions();
 		Map<String,Integer> allJLSMap = new HashMap<>();
 		int oldVersion = 0;
@@ -222,6 +263,7 @@ public class ParseConfiguration {
 	}
 	
 	public static String fixJavaFileNamingWithDefault(String filename) {
+		logger.trace("{} -> fixJavaFileNamingWithDefault(String)");
 		String defaultName = "DefaultClass";
 		String extension = ".java";
         if (filename == null || filename.trim().isEmpty()) {
@@ -257,19 +299,23 @@ public class ParseConfiguration {
     }
 
 	public static String getJLStoString(int version) {
+		logger.trace("{} -> getJLStoString(int)");
 		if (version < 1 || version > AST.getJLSLatest()) return "";
 		return "JLS"+version;
 	}
 	
 	public String getJLStoString() {
+		logger.trace("{} -> getJLStoString()");
 		return getJLStoString(currentJLS);
 	}
 
 	public boolean isJLSSupported(int versionJLS) {
+		logger.trace("{} -> isJLSSupported(int)");
 		return JAVA_JLS_LIST.containsKey("JLS"+versionJLS);
 	}
 
 	public String listConfigSettings() {
+		logger.trace("{} -> listConfigSettings()");
 		return
 			ParseConfiguration.class.getSimpleName()+":"+
 			"\n  → JRE's version     = "+getJLStoString(this.currentJLS)+
@@ -282,6 +328,7 @@ public class ParseConfiguration {
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)");
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -299,11 +346,13 @@ public class ParseConfiguration {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()");
 		return Objects.hash(currentJLS, resolveBindings, classPaths, sourcePaths, defaultUnitName);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()");
 		return (this.getClass().getSimpleName()+"{"
 				+ "JREVersion=%s, "
 				+ "resolveBindings=%s, "

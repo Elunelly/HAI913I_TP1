@@ -22,11 +22,13 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	
 	public BaseASTVisitor() {
 		this.result = new VisitorResult(getVisitorName());
+		logger.trace("{} -> BaseASTVisitor()",getVisitorName());
 	}
 	
 	public abstract String getVisitorName();
 	
 	public Collection<VisitorResult> visit(ProjectInfo project) {
+		logger.trace("{} -> visit(ProjectInfo)",getVisitorName());
 		Objects.requireNonNull(project, "ProjectInfo cannot be null");
 		Collection<VisitorResult> results = new ArrayList<>();
 		for (PackageInfo packageInfo : project.copyPackages()) {
@@ -43,6 +45,7 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	}
 	
 	public VisitorResult visitAndExtract(CompilationUnit compilationUnit, Object context) {
+		logger.trace("{} -> visitAndExtract(CompilationUnit,Object)",getVisitorName());
 		this.currentUnit = compilationUnit;
 		if (context!=null) preVisit(context);
 		if (compilationUnit == null) {
@@ -62,6 +65,7 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	}
 	
 	public VisitorResult visitAndExtract(CompilationUnit compilationUnit) {
+		logger.trace("{} -> visitAndExtract(CompilationUnit)",getVisitorName());
 		return visitAndExtract(compilationUnit, null);
 	}
 	
@@ -69,12 +73,19 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	
 	protected abstract void afterVisit();
 	
-	public VisitorResult getResult() {return this.result;}
+	public VisitorResult getResult() {
+		logger.trace("{} -> getResult()",getVisitorName());
+		return this.result;
+	}
 	
-	protected CompilationUnit getCurrentUnit() {return currentUnit;}
+	protected CompilationUnit getCurrentUnit() {
+		logger.trace("{} -> getCurrentUnit()",getVisitorName());
+		return currentUnit;
+	}
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",getVisitorName());
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -88,11 +99,13 @@ public abstract class BaseASTVisitor extends ASTVisitor {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",getVisitorName());
 		return Objects.hash(result);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",getVisitorName());
 		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "result=%s}")

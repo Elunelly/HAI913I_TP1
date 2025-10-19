@@ -27,15 +27,17 @@ public class ASTParserFacade {
 	
 	public ASTParserFacade() {
 		this(ParseConfiguration.defaultConfig());
+		logger.trace("{} -> ASTParserFacade()");
 	}
 	
 	public ASTParserFacade(ParseConfiguration config) {
+		logger.trace("{} -> ASTParserFacade(ParseConfiguration)");
 		this.config = config;
 		this.parser = createParser();
-		logger.trace("Initiate a new parser: "+config);
 	}
 	
 	public CompilationUnit parseString(String javaString, String unitName) {
+		logger.trace("{} -> parseString(String,String)");
 		if (javaString == null || javaString.isBlank()) {
 			IllegalArgumentException error = new IllegalArgumentException("Java code cannot be empty or null");
 			logger.error(error.getLocalizedMessage());
@@ -52,10 +54,12 @@ public class ASTParserFacade {
 	}
 	
 	public CompilationUnit parseString(String javaString) {
+		logger.trace("{} -> parseString(String)");
 		return parseString(javaString, null);
 	}
 	
 	public Map.Entry<String,CompilationUnit> parseFile(File javaFile) {
+		logger.trace("{} -> parseFile(File)");
 		if (javaFile == null || !javaFile.exists()) {
 			IllegalArgumentException error = new IllegalArgumentException("Java file "+javaFile+" does not exist");
 			logger.error(error.getLocalizedMessage());
@@ -88,6 +92,7 @@ public class ASTParserFacade {
 	}
 	
 	public Map<String,CompilationUnit> parseFiles(List<ASTError> errorsCollector, List<File> files) {
+		logger.trace("{} -> parseFiles(List<ASTError>,List<File>)");
 		Map<String,CompilationUnit> result = new HashMap<>();
 		for (File file : files) {
 			try {
@@ -108,26 +113,36 @@ public class ASTParserFacade {
 	}
 	
 	public Map<String,CompilationUnit> parseFiles(List<File> files) {
+		logger.trace("{} -> parseFiles(List<File>)");
 		return parseFiles(null, files);
 	}
 	
 	private ASTParser createParser() {
+		logger.trace("{} -> createParser()");
 		ASTParser parser = ASTParser.newParser(this.config.getCurrentJLS());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setResolveBindings(false);
 		return parser;
 	}
 	
-	public ParseConfiguration getConfig() {return this.config;}
+	public ParseConfiguration getConfig() {
+		logger.trace("{} -> getConfig()");
+		return this.config;
+	}
 	
-	public ASTParser getParser() {return this.parser;}
+	public ASTParser getParser() {
+		logger.trace("{} -> getParser()");
+		return this.parser;
+	}
 	
 	public static ASTParserFacade createDefault() {
+		logger.trace("{} -> createDefault()");
 		return new ASTParserFacade();
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)");
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -142,11 +157,13 @@ public class ASTParserFacade {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()");
 		return Objects.hash(config, parser);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()");
 		return (this.getClass().getSimpleName()+"{"
 				+ "config=%s, "
 				+ "parser=%s}")

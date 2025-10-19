@@ -26,27 +26,48 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
 		this.parentClass = Objects.requireNonNull(parentClass, "Class cannot be null for '"+name+"' method");
 		this.returnType = node.getReturnType2()==null?"":node.getReturnType2().toString();
 		this.metrics = new MethodMetrics(getQualifiedName());
+		logger.trace("{} -> MethodInfo(MethodDeclaration,ClassInfo)",name);
     }
     
 	@Override
 	public String getQualifiedName() {
+		logger.trace("{} -> getQualifiedName()",name);
 		if (getClassName().isBlank()) return getName();
 		else return "%s::%s".formatted(getClassName(),getName());
 	}
     
-    public ClassInfo getParentClass() {return parentClass;}
+    public ClassInfo getParentClass() {
+		logger.trace("{} -> getParentClass()",name);
+    	return parentClass;
+    }
     
-    public String getClassName() {return parentClass.getName();}
+    public String getClassName() {
+		logger.trace("{} -> getClassName()",name);
+    	return parentClass.getName();
+    }
     
-    public String getReturnType() {return returnType;}
+    public String getReturnType() {
+		logger.trace("{} -> getReturnType()",name);
+    	return returnType;
+    }
 
-	public boolean isConstructor() {return node.isConstructor();}
+	public boolean isConstructor() {
+		logger.trace("{} -> isConstructor()",name);
+		return node.isConstructor();
+	}
 
-	public List<String> getParameters() {return Collections.unmodifiableList(parameters);}
+	public List<String> getParameters() {
+		logger.trace("{} -> getParameters()",name);
+		return Collections.unmodifiableList(parameters);
+	}
 	
-	public List<String> copyParameters() {return new ArrayList<>(parameters);}
+	public List<String> copyParameters() {
+		logger.trace("{} -> copyParameters()",name);
+		return new ArrayList<>(parameters);
+	}
 
 	public boolean addParameter(String parameter) {
+		logger.trace("{} -> addParameter(String)",name);
 		if (parameter!=null && !parameter.isBlank() && !parameters.contains(parameter) && parameters.add(parameter)) {
 			logger.debug("Parameter added: %s".formatted(parameter));
 			return true;
@@ -55,6 +76,7 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
 	}
 	
 	public boolean removeParameter(String parameter) {
+		logger.trace("{} -> removeParameter(String)",name);
 		if (parameter!=null && parameters.remove(parameter)) {
 			logger.debug("Parameter removed: %s".formatted(parameter));
 			return true;
@@ -62,10 +84,14 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
 		return false;
 	}
 	
-	public MethodMetrics getMetrics() {return metrics;}
+	public MethodMetrics getMetrics() {
+		logger.trace("{} -> getMetrics()",name);
+		return metrics;
+	}
 	
 	@Override
 	public String getSignature() {
+		logger.trace("{} -> getSignature()",name);
 		return 
 			(isConstructor() ? "" : getReturnType()+" ")+
 			getName()+
@@ -75,11 +101,13 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
 	
 	@Override
 	public String getShortSignature() {
+		logger.trace("{} -> getShortSignature()",name);
 		return getClassName()+"::"+getName();
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",name);
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -97,11 +125,13 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",name);
 		return Objects.hash(getSignature(), getClassName(), getReturnType(), isConstructor(), parameters.size());
 	}
 
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",name);
 		return (this.getClass().getSimpleName()+"{"
 				+ "visibility=%s, "
 				+ "name=%s, "

@@ -35,9 +35,11 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	public ClassStructureVisitor() {
 		super();
+		logger.trace("{} -> ClassStructureVisitor()",getVisitorName());
 	}
 	
 	public void reset() {
+		logger.trace("{} -> reset()",getVisitorName());
 		this.classes.clear();
 		this.currentPackage = null;
 		this.currentClass = null;
@@ -52,6 +54,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(PackageDeclaration node) {
+		logger.trace("{} -> visit(PackageDeclaration)",getVisitorName());
 		String packageName = node.getName().getFullyQualifiedName();
 		if (!packageName.equals(currentPackage.getName())) {
 			logger.error("PackageInfo '{}' does not have the correct name '{}'",currentPackage.getName(),packageName);
@@ -62,6 +65,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(TypeDeclaration node) {
+		logger.trace("{} -> visit(TypeDeclaration)",getVisitorName());
 		this.currentClass = new ClassInfo(node, currentPackage);
 		
 		for (Object interfaceType : node.superInterfaceTypes()) {
@@ -77,6 +81,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(MethodDeclaration node) {
+		logger.trace("{} -> visit(MethodDeclaration)",getVisitorName());
 		if (this.currentClass==null) return MethodExploreChildren;
 		
 		MethodInfo method = new MethodInfo(node, currentClass);
@@ -95,6 +100,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean visit(FieldDeclaration node) {
+		logger.trace("{} -> visit(FieldDeclaration)",getVisitorName());
 		if (this.currentClass==null) return FieldExploreChildren;
 		
 		String fieldType = node.getType().toString();
@@ -114,6 +120,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	protected void preVisit(Object context) {
+		logger.trace("{} -> preVisit(Object)",getVisitorName());
 		if (context==null) return;
 		else if (context.getClass() == PackageInfo.class) {
 			this.currentPackage = (PackageInfo) context;
@@ -123,6 +130,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	protected void afterVisit() {
+		logger.trace("{} -> afterVisit()",getVisitorName());
 		if (currentPackage!=null)
 			logger.debug("End of visit in package '{}':",currentPackage.getName());
 	    result.addData("classes", classes);
@@ -135,6 +143,7 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",getVisitorName());
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -149,11 +158,13 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",getVisitorName());
 		return Objects.hash(getVisitorName(), result);
 	}
 	
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",getVisitorName());
 		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "classes=%d, "

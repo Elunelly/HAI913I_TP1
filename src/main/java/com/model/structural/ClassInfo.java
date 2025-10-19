@@ -27,6 +27,7 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	
 	public ClassInfo(TypeDeclaration node, PackageInfo parentPackage) {
 		super(Objects.requireNonNull(node),node.getName().getIdentifier());
+		logger.trace("{} -> ClassInfo(TypeDeclaration,PackageInfo)",name);
 		this.parentPackage = Objects.requireNonNull(parentPackage, "Package cannot be null for '"+name+"' class");
 		this.superClass = node.getSuperclassType()!=null ?
 				node.getSuperclassType().toString() :
@@ -36,33 +37,54 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 
 	@Override
 	public String getQualifiedName() {
+		logger.trace("{} -> getQualifiedName()",name);
 		if (getPackageName().isBlank()) return getName();
 		else return "%s.%s".formatted(getPackageName(),getName());
 	}
 	
 	// PARENT PACKAGE
 	
-	public PackageInfo getParentPackage() {return this.parentPackage;}
+	public PackageInfo getParentPackage() {
+		logger.trace("{} -> getParentPackage()",name);
+		return this.parentPackage;
+	}
 	
-	public String getPackageName() {return this.parentPackage.getName();}
+	public String getPackageName() {
+		logger.trace("{} -> getPackageName()",name);
+		return this.parentPackage.getName();
+	}
 	
 	// SUPER CLASS
 	
-	public String getSuperClass() {return superClass;}
+	public String getSuperClass() {
+		logger.trace("{} -> getSuperClass()",name);
+		return superClass;
+	}
 	
-	public boolean hasInheritance() {return superClass!=null && !this.superClass.isBlank();}
+	public boolean hasInheritance() {
+		logger.trace("{} -> hasInheritance()",name);
+		return superClass!=null && !this.superClass.isBlank();
+	}
 	
 	public boolean isComplex() {
+		logger.trace("{} -> isComplex()",name);
 		return hasInheritance() || hasImplementations();
 	}
 	
 	// INTERFACES
 	
-	public boolean isInterface() {return node.isInterface();}
+	public boolean isInterface() {
+		logger.trace("{} -> isInterface()",name);
+		return node.isInterface();
+	}
 	
-	public List<String> getInterfaces() {return Collections.unmodifiableList(interfaces);}
+	public List<String> getInterfaces() {
+		logger.trace("{} -> getInterfaces()",name);
+		return Collections.unmodifiableList(interfaces);
+	}
 	
 	public boolean addInterface(String interfaceName) {
+		logger.trace("{} -> addInterface(String)",name);
 		if (interfaceName!=null && !interfaces.contains(interfaceName) && interfaces.add(interfaceName)) {
 			logger.debug("Interface added: %s".formatted(interfaceName));
 			return true;
@@ -71,6 +93,7 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean removeInterface(String interfaceName) {
+		logger.trace("{} -> removeInterface(String)",name);
 		if (interfaceName!=null && interfaces.remove(interfaceName)) {
 			logger.debug("Interface removed: %s".formatted(interfaceName));
 			return true;
@@ -79,16 +102,24 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean hasImplementations() {
+		logger.trace("{} -> hasImplementation()",name);
 		return !interfaces.isEmpty();
 	}
 	
 	// METHODS
 	
-	public List<MethodInfo> getMethods() {return Collections.unmodifiableList(methods);}
+	public List<MethodInfo> getMethods() {
+		logger.trace("{} -> getMethods()",name);
+		return Collections.unmodifiableList(methods);
+	}
 	
-	public List<MethodInfo> copyMethods() {return new ArrayList<>(methods);}
+	public List<MethodInfo> copyMethods() {
+		logger.trace("{} -> copyMethods()",name);
+		return new ArrayList<>(methods);
+	}
 	
 	public boolean addMethod(MethodInfo methodInfo) {
+		logger.trace("{} -> addMethod(MethodInfo)",name);
 		if (methodInfo!=null && !methods.contains(methodInfo) && methods.add(methodInfo)) {
 			logger.debug("Method added: %s".formatted(methodInfo));
 			return true;
@@ -97,10 +128,12 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean addAllMethods(List<MethodInfo> methodInfos) {
+		logger.trace("{} -> addAllMethods(List<MethodInfo>)",name);
 		return methodInfos.stream().filter(c -> addMethod(c)).count() > 0;
 	}
 	
 	public boolean removeMethod(MethodInfo methodInfo) {
+		logger.trace("{} -> removeMethod(MethodInfo)",name);
 		if (methodInfo!=null && methods.remove(methodInfo)) {
 			logger.debug("Method removed: %s".formatted(methodInfo));
 			return true;
@@ -109,10 +142,12 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean removeAllMethods(List<MethodInfo> methodInfos) {
+		logger.trace("{} -> removeAllMethods(List<MethodInfo>)",name);
 		return methodInfos.stream().filter(c -> removeMethod(c)).count() > 0;
 	}
 	
 	public MethodInfo getMethod(String name) {
+		logger.trace("{} -> getMethod(String)",name);
 		for(MethodInfo methodInfo : methods) {
 			if (name.equalsIgnoreCase(methodInfo.getName())) return methodInfo;
 		}
@@ -120,29 +155,40 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean hasMethod(String name) {
+		logger.trace("{} -> hasMethod(String)",name);
 		return getMethod(name) != null;
 	}
 	
 	public boolean hasMethods() {
+		logger.trace("{} -> hasMethods()",name);
 		return !methods.isEmpty();
 	}
 	
 	public void clearMethods() {
+		logger.trace("{} -> clearMethods()",name);
 		methods.clear();
 		logger.debug("All Methods removed from: "+getName());
 	}
 	
 	public List<MethodInfo> getMethodsByVisibility(NodeVisibility visibility) {
+		logger.trace("{} -> getMethodsByVisibility(NodeVisibility)",name);
 		return copyMethods().stream().filter(m -> m.getVisibility()==visibility).toList();
 	}
 	
 	// FIELDS
 	
-	public List<FieldInfo> getFields() {return Collections.unmodifiableList(fields);}
+	public List<FieldInfo> getFields() {
+		logger.trace("{} -> getFields()",name);
+		return Collections.unmodifiableList(fields);
+	}
 	
-	public List<FieldInfo> copyFields() {return new ArrayList<>(fields);}
+	public List<FieldInfo> copyFields() {
+		logger.trace("{} -> copyFields()",name);
+		return new ArrayList<>(fields);
+	}
 	
 	public boolean addField(FieldInfo fieldInfo) {
+		logger.trace("{} -> addField(FieldInfo)",name);
 		if (fieldInfo!=null && !fields.contains(fieldInfo) && fields.add(fieldInfo)) {
 			logger.debug("Field added: %s".formatted(fieldInfo));
 			return true;
@@ -151,10 +197,12 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean addAllFields(List<FieldInfo> fieldInfos) {
+		logger.trace("{} -> addAllFields(List<FieldInfo>)",name);
 		return fieldInfos.stream().filter(c -> addField(c)).count() > 0;
 	}
 	
 	public boolean removeField(FieldInfo fieldInfo) {
+		logger.trace("{} -> removeField(FieldInfo)",name);
 		if (fieldInfo!=null && fields.remove(fieldInfo)) {
 			logger.debug("Field removed: %s".formatted(fieldInfo));
 			return true;
@@ -163,10 +211,12 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean removeAllFields(List<FieldInfo> fieldInfos) {
+		logger.trace("{} -> removeAllFields(List<FieldInfo>)",name);
 		return fieldInfos.stream().filter(c -> removeField(c)).count() > 0;
 	}
 	
 	public FieldInfo getField(String name) {
+		logger.trace("{} -> getField(String)",name);
 		for(FieldInfo fieldInfo : fields) {
 			if (name.equalsIgnoreCase(fieldInfo.getName())) return fieldInfo;
 		}
@@ -174,30 +224,38 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	}
 	
 	public boolean hasField(String name) {
+		logger.trace("{} -> hasField(String)",name);
 		return getField(name) != null;
 	}
 	
 	public boolean hasFields() {
+		logger.trace("{} -> hasFields()",name);
 		return !fields.isEmpty();
 	}
 	
 	public void clearFields() {
+		logger.trace("{} -> clearFields()",name);
 		fields.clear();
 		logger.debug("All Fields removed from: "+getName());
 	}
 	
 	public List<FieldInfo> getFieldsByVisibility(NodeVisibility visibility) {
+		logger.trace("{} -> getFieldsByVisibility(NodeVisibility)",name);
 		return copyFields().stream().filter(f -> f.getVisibility()==visibility).toList();
 	}
 	
 	// METRICS
 	
-	public ClassMetrics getMetrics() {return metrics;}
+	public ClassMetrics getMetrics() {
+		logger.trace("{} -> getMetrics()",name);
+		return metrics;
+	}
 	
 	// UTILITIES
 	
 	@Override
 	public String getSignature() {
+		logger.trace("{} -> getSignature()",name);
 		return 
 			(isInterface() ? "interface" : "class")+" "+
 			getName()+
@@ -208,10 +266,12 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	
 	@Override
 	public String getShortSignature() {
+		logger.trace("{} -> getShortSignature()",name);
 		return getName();
 	}
 	
 	public String getOverviewSignature() {
+		logger.trace("{} -> getOverviewSignature()",name);
 		int fn = getFields().size();
 		int mn = getMethods().size();
 		return "%s { %d field%s, %d method%s }"
@@ -221,6 +281,7 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	
 	@Override
 	public boolean equals(Object obj) {
+		logger.trace("{} -> equals(Object)",name);
 		if (this == obj)
 			return true;
 		if (obj == null || getClass() != obj.getClass())
@@ -237,11 +298,13 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	
 	@Override
 	public int hashCode() {
+		logger.trace("{} -> hashCode()",name);
 		return Objects.hash(getSignature(), getPackageName(), methods.size(), fields.size());
 	}
 
 	@Override
 	public String toString() {
+		logger.trace("{} -> toString()",name);
 		return (this.getClass().getSimpleName()+"{"
 				+ "visibility=%s, "
 				+ "name=%s, "
