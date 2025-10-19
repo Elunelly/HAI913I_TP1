@@ -1,5 +1,7 @@
 package com.visitors.base;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -7,18 +9,38 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.project.PackageInfo;
+import com.model.project.ProjectInfo;
+
 public abstract class BaseASTVisitor extends ASTVisitor {
 	
 	private static final Logger logger = LoggerFactory.getLogger(BaseASTVisitor.class);
 	
 	protected VisitorResult result;
 	protected CompilationUnit currentUnit;
+	protected PackageInfo currentPackage;
 	
 	public BaseASTVisitor() {
 		this.result = new VisitorResult(getVisitorName());
 	}
 	
 	public abstract String getVisitorName();
+	
+	public Collection<VisitorResult> visit(ProjectInfo project) {
+		Objects.requireNonNull(project, "ProjectInfo cannot be null");
+		Collection<VisitorResult> results = new ArrayList<>();
+		for (PackageInfo packageInfo : project.copyPackages()) {
+			this.currentPackage = packageInfo;
+			for (CompilationUnit unit : packageInfo.copyUnits()) {
+				this.currentUnit = unit;
+				VisitorResult result = visitAndExtract(unit);
+				if (result!=null) {
+					results.add(result);
+				}
+			}
+		}
+		return results;
+	}
 	
 	public VisitorResult visitAndExtract(CompilationUnit compilationUnit, Object context) {
 		this.currentUnit = compilationUnit;

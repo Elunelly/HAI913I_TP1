@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -17,11 +18,11 @@ import com.calculators.StatisticsCalculator;
 import com.config.ParseConfiguration;
 import com.exceptions.ASTError;
 import com.extractors.MetricExtractor;
-import com.model.project.PackageInfo;
 import com.model.project.ProjectInfo;
 import com.parser.ASTParserFacade;
 import com.utils.table.TableUI;
 import com.visitors.base.BaseASTVisitor;
+import com.visitors.base.VisitorResult;
 import com.visitors.structural.ClassStructureVisitor;
 
 public class ASTProcessor {
@@ -241,16 +242,14 @@ public class ASTProcessor {
 		// TODO
 	}
 	
-    private void executeVisitor(BaseASTVisitor visitor, ProjectInfo project) {
+    private Collection<VisitorResult> executeVisitor(BaseASTVisitor visitor, ProjectInfo project) {
 		try {
 			logger.debug("Executing visitor: "+visitor.getVisitorName());
-			for (PackageInfo packageInfo : project.copyPackages()) {
-				for (CompilationUnit cu : packageInfo.copyUnits())
-					visitor.visitAndExtract(cu,packageInfo);
-			}
+			return visitor.visit(project);
 			
 		} catch (Exception e) {
 			logger.error("Error executing visitor '"+visitor.getVisitorName()+"': "+visitor.getResult().getErrorMessage());
+			return Collections.emptyList();
 		}
 	}
 	

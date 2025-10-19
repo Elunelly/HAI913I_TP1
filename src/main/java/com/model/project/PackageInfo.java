@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.metrics.PackageMetrics;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
@@ -28,13 +29,20 @@ public class PackageInfo extends ProjectNode {
 	private final Map<String,PackageInfo> subPackages = new HashMap<>();
 	private final List<ClassInfo> classes = new ArrayList<>();
 	private final Map<String,CompilationUnit> units = new HashMap<>();
+	
+	private final PackageMetrics metrics;
 
 	public PackageInfo(String name, ProjectInfo project) {
 		super(name);
 		this.project = Objects.requireNonNull(project, "Project cannot be null for '"+name+"' package");
+		this.metrics = new PackageMetrics(getQualifiedName());
 	}
 	
-	public String getName() {return name;}
+	@Override
+	public String getQualifiedName() {
+		if (project.getName().isBlank()) return getName();
+		else return "%s:%s".formatted(project.getName(),getName());
+	}
 	
 	public String getLastName() {return name.substring(name.lastIndexOf(".")+1);}
 	
@@ -250,6 +258,10 @@ public class PackageInfo extends ProjectNode {
 			copySubPackages().stream().flatMap(p -> p.getAllUnits().stream())
 		).toList();
 	}
+	
+	// METRICS
+	
+	public PackageMetrics getMetrics() {return metrics;}
 	
 	// UTILITIES
 	

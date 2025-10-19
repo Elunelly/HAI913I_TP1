@@ -14,6 +14,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.metrics.ProjectMetrics;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
@@ -26,11 +27,14 @@ public class ProjectInfo extends ProjectNode {
 	private final Path rootPath;
 	private final Map<String,PackageInfo> packages = new HashMap<>();
 	
+	private final ProjectMetrics metrics;
+	
 	public ProjectInfo(String name, Path rootPath) {
 		super(checkName(name,rootPath));
 		logger.debug("Setting project name: "+this.name);
 		this.rootPath = checkRootPath(rootPath);
 		logger.debug("Setting project root: "+this.rootPath);
+		this.metrics = new ProjectMetrics(getQualifiedName());
 	}
 	
 	public ProjectInfo(String name) {
@@ -58,50 +62,11 @@ public class ProjectInfo extends ProjectNode {
 		return rootPath;
 	}
 	
-//	private void setupProjectWithFiles(Map<String,List<File>> packagedFiles) {
-//		this.fileRepository.clear();
-//		if (packagedFiles.isEmpty()) {
-//			logger.warn("Project is initialized without any files");
-//			return;
-//		}
-//		this.fileRepository.putAll(packagedFiles);
-//		logger.debug("Filling up project files hierarchy: "+this.fileRepository.size());
-//		for (Map.Entry<String,List<File>> packageStructure : this.fileRepository.entrySet()) {
-//			String packageName = packageStructure.getKey();
-//			PackageInfo packageInfo = new PackageInfo(packageName, this);
-//			addPackage(packageInfo);
-//		}
-//		buildPackagesHierarchy();
-//	}
-	
-//	public void associateCompilationUnits(Map<File,CompilationUnit> compilationUnits) {
-//		for (Map.Entry<String,List<File>> entry : this.fileRepository.entrySet()) {
-//			String packageName = entry.getKey();
-//			List<File> packageFiles = entry.getValue();
-//			PackageInfo packageInfo = packages.get(packageName);
-//			if (packageInfo==null) {
-//				logger.warn("{} is not registered in 'packages'",packageName);
-//				continue;
-//			}
-//			List<CompilationUnit> packageUnits = unitRepository.get(packageInfo);
-//			if (packageUnits==null) {
-//				logger.warn("{} is different from {} in 'CompilationUnits Repository'",packageName,packageInfo);
-//				continue;
-//			}
-//			List<CompilationUnit> result = packageFiles.stream()
-//					.filter(compilationUnits::containsKey)
-//					.map(compilationUnits::get)
-//					.toList();
-//			packageUnits.clear();
-//			if (packageUnits.addAll(result)) {
-//				logger.debug("Successfully associated {} CompilationUnit on '{}'",result.size(),packageName);
-//			} else {
-//				logger.error("Error on associating {} CompilationUnit on '{}'",result.size(),packageName);
-//			}
-//		}
-//	}
-	
-	public String getName() {return this.name;}
+	@Override
+	public String getQualifiedName() {
+		if (getFullName().isBlank()) return getName();
+		else return "%s (%s)".formatted(getName(),getFullName());
+	}
 	
 	// ROOT PATH
 	
@@ -163,6 +128,10 @@ public class ProjectInfo extends ProjectNode {
 	public List<String> getPackagesName() {return Collections.unmodifiableList(copyPackagesName());}
 	
 	public List<String> copyPackagesName() {return new ArrayList<>(packages.keySet());}
+	
+	// METRICS
+	
+	public ProjectMetrics getMetrics() {return metrics;}
 	
 	// UTILITIES
     

@@ -1,4 +1,4 @@
-package com.model.utils;
+package com.model;
 
 import java.util.Objects;
 
@@ -21,6 +21,8 @@ public abstract class NodeInfo implements ModelInfo {
 	}
 
 	public String getName() {return name;}
+	
+	public abstract String getQualifiedName();
 
 	@Override
 	public boolean equals(Object obj) {

@@ -27,7 +27,6 @@ public class ClassStructureVisitor extends BaseASTVisitor {
 	private final List<ClassInfo> classes = new ArrayList<>();
 	private final List<MethodInfo> methods = new ArrayList<>();
 	private final List<FieldInfo> fields = new ArrayList<>();
-	private PackageInfo currentPackage;
 	private ClassInfo currentClass;
 	private static final boolean PackageExploreChildren = true;
 	private static final boolean TypeExploreChildren = true;

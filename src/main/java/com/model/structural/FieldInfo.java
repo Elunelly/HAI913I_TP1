@@ -13,16 +13,32 @@ public class FieldInfo extends StructuralNode<VariableDeclarationFragment> {
 
 	private final ClassInfo parentClass;
 	private final String type;
+	private final String defaultValue;
 	
 	public FieldInfo(VariableDeclarationFragment node, ClassInfo parentClass, String type) {
 		super(Objects.requireNonNull(node),node.getName().getIdentifier());
 		this.parentClass = Objects.requireNonNull(parentClass, "Class cannot be null for '"+name+"' method");
 		this.type = Objects.requireNonNull(type, "Type cannot be null");
+		this.defaultValue = node.getInitializer()==null ? null : node.getInitializer().toString();
+	}
+
+	@Override
+	public String getQualifiedName() {
+		if (getClassName().isBlank()) return getName();
+		else return "%s[%s]".formatted(getClassName(),getName());
 	}
 	
 	public ClassInfo getParentClass() {return parentClass;}
 	
-	public String getType() {return this.type;}
+	public String getClassName() {return parentClass.getName();}
+	
+	public String getType() {return type;}
+	
+	public String getDefaultValue() {return defaultValue;}
+	
+	public boolean isInitialized() {
+		return defaultValue!=null;
+	}
 	
 	public boolean isConstant() {
 		return isStatic() && isFinal();
@@ -30,7 +46,7 @@ public class FieldInfo extends StructuralNode<VariableDeclarationFragment> {
 	
 	@Override
 	public String getSignature() {
-		return getType()+" "+getName();
+		return getType()+" "+getName()+(isInitialized()?" "+getDefaultValue():"");
 	}
 
 	@Override

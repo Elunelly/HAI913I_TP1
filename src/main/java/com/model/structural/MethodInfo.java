@@ -9,23 +9,36 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.metrics.MethodMetrics;
+
 public class MethodInfo extends StructuralNode<MethodDeclaration> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(MethodInfo.class);
 
 	private final ClassInfo parentClass;
+	private final String returnType;
     private final List<String> parameters = new ArrayList<>();
+    
+    private final MethodMetrics metrics;
     
     public MethodInfo(MethodDeclaration node, ClassInfo parentClass) {
 		super(Objects.requireNonNull(node),node.getName().getIdentifier());
 		this.parentClass = Objects.requireNonNull(parentClass, "Class cannot be null for '"+name+"' method");
+		this.returnType = node.getReturnType2()==null?"":node.getReturnType2().toString();
+		this.metrics = new MethodMetrics(getQualifiedName());
     }
+    
+	@Override
+	public String getQualifiedName() {
+		if (getClassName().isBlank()) return getName();
+		else return "%s::%s".formatted(getClassName(),getName());
+	}
     
     public ClassInfo getParentClass() {return parentClass;}
     
     public String getClassName() {return parentClass.getName();}
     
-    public String getReturnType() {return node.getReturnType2()==null?"":node.getReturnType2().toString();}
+    public String getReturnType() {return returnType;}
 
 	public boolean isConstructor() {return node.isConstructor();}
 
@@ -49,9 +62,12 @@ public class MethodInfo extends StructuralNode<MethodDeclaration> {
 		return false;
 	}
 	
+	public MethodMetrics getMetrics() {return metrics;}
+	
 	@Override
 	public String getSignature() {
 		return 
+			(isConstructor() ? "" : getReturnType()+" ")+
 			getName()+
 			"("+String.join(", ",getParameters())+")"
 		;

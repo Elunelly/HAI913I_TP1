@@ -1,0 +1,233 @@
+@startuml LOC_Visitor_Architecture
+
+!theme reddress-darkred
+skinparam packageStyle rectangle
+
+' ============ PACKAGES ============
+package "visitors.base" {
+    abstract class BaseASTVisitor {
+        # VisitorResult result
+        + {abstract} String getVisitorName()
+        + VisitorResult visit(ProjectInfo project)
+        # void preVisit(Object context)
+        # void afterVisit()
+        + VisitorResult getResult()
+    }
+    
+    class VisitorResult {
+        - String visitorName
+        - Map<String, Object> data
+        - boolean successful
+        + void addData(String key, Object value)
+        + Object getData(String key)
+    }
+}
+
+package "visitors.metrics" {
+    class LinesOfCodeVisitor {
+        - Map<String, ClassMetrics> classMetrics
+        - Map<String, MethodMetrics> methodMetrics
+        - ClassInfo currentClass
+        - PackageInfo currentPackage
+        
+        + String getVisitorName()
+        + boolean visit(PackageDeclaration node)
+        + boolean visit(TypeDeclaration node)
+        + boolean visit(MethodDeclaration node)
+        - int calculatePhysicalLOC(ASTNode node)
+        - int calculateLogicalLOC(ASTNode node)
+        - void storeClassMetrics(ClassInfo classInfo, int loc)
+        - void storeMethodMetrics(MethodInfo methodInfo, int loc)
+    }
+}
+
+package "model.metrics" {
+    abstract class NodeMetrics<T> {
+        # String name
+        # Map<String,Object> data
+        # int linesOfCode
+        # boolean isCalculated
+        
+        + final void calculate(T source)
+        # {abstract} void doCalculate(T source)
+        + int getLinesOfCode()
+        + void setLinesOfCode(int loc)
+    }
+    
+    class ClassMetrics {
+        - int totalMethods
+        - int totalFields
+        - double complexity
+        - double avgLOCPerMethod
+        
+        # void doCalculate(ClassInfo source)
+        + int getTotalMethods()
+        + double getAvgLOCPerMethod()
+    }
+    
+    class MethodMetrics {
+        - int totalParameters
+        - int cyclomaticComplexity
+        - int nestingDepth
+        
+        # void doCalculate(MethodInfo source)
+        + int getTotalParameters()
+    }
+    
+    class PackageMetrics {
+        - int totalClasses
+        - int totalMethods
+        - double avgLOCPerClass
+        
+        # void doCalculate(PackageInfo source)
+    }
+    
+    class ProjectMetrics {
+        - int totalPackages
+        - int totalClasses
+        - double avgLOCPerPackage
+        
+        # void doCalculate(ProjectInfo source)
+    }
+}
+
+package "model.structural" {
+    class ClassInfo {
+        - String name
+        - List<MethodInfo> methods
+        - ClassMetrics metrics
+        
+        + ClassMetrics getMetrics()
+        + void setMetrics(ClassMetrics metrics)
+    }
+    
+    class MethodInfo {
+        - String name
+        - List<String> parameters
+        - MethodMetrics metrics
+        
+        + MethodMetrics getMetrics()
+        + void setMetrics(MethodMetrics metrics)
+    }
+    
+    class PackageInfo {
+        - String name
+        - List<ClassInfo> classes
+        - PackageMetrics metrics
+        
+        + PackageMetrics getMetrics()
+        + void setMetrics(PackageMetrics metrics)
+    }
+    
+    class ProjectInfo {
+        - String name
+        - List<PackageInfo> packages
+        - ProjectMetrics metrics
+        
+        + ProjectMetrics getMetrics()
+        + void setMetrics(ProjectMetrics metrics)
+    }
+}
+
+package "core" {
+    class AnalysisResult {
+        - ProjectInfo project
+        + ProjectInfo getProject()
+        + List<ClassInfo> getClasses()
+    }
+}
+
+package "extractors" {
+    interface MetricExtractor<T> {
+        + String getMetricName()
+        + MetricType getMetricType()
+        + Object extract(T source)
+    }
+    
+    abstract class AbstractMetricExtractor<T> {
+        # String metricName
+        # MetricType type
+        + String getMetricName()
+        + MetricType getMetricType()
+        + {abstract} Object extract(T source)
+    }
+    
+    class TotalLOCExtractor {
+        + Object extract(AnalysisResult result)
+    }
+    
+    class AvgLOCPerClassExtractor {
+        + Object extract(AnalysisResult result)
+    }
+    
+    class TopClassesByLOCExtractor {
+        - int topN
+        + Object extract(AnalysisResult result)
+    }
+}
+
+' ============ RELATIONSHIPS ============
+
+' Inheritance
+BaseASTVisitor <|-- LinesOfCodeVisitor
+NodeMetrics <|-- ClassMetrics
+NodeMetrics <|-- MethodMetrics
+NodeMetrics <|-- PackageMetrics
+NodeMetrics <|-- ProjectMetrics
+AbstractMetricExtractor <|-- TotalLOCExtractor
+AbstractMetricExtractor <|-- AvgLOCPerClassExtractor
+AbstractMetricExtractor <|-- TopClassesByLOCExtractor
+MetricExtractor <|.. AbstractMetricExtractor
+
+' Associations
+BaseASTVisitor o-- VisitorResult : "contains"
+LinesOfCodeVisitor --> ClassMetrics : "creates & stores"
+LinesOfCodeVisitor --> MethodMetrics : "creates & stores"
+LinesOfCodeVisitor ..> PackageInfo : "visits"
+LinesOfCodeVisitor ..> ClassInfo : "visits"
+LinesOfCodeVisitor ..> MethodInfo : "visits"
+
+ClassMetrics --> ClassInfo : "calculates from"
+MethodMetrics --> MethodInfo : "calculates from"
+PackageMetrics --> PackageInfo : "calculates from"
+ProjectMetrics --> ProjectInfo : "calculates from"
+
+ClassInfo *-- MethodInfo : "contains"
+ClassInfo *-- ClassMetrics : "has"
+MethodInfo *-- MethodMetrics : "has"
+PackageInfo *-- ClassInfo : "contains"
+PackageInfo *-- PackageMetrics : "has"
+ProjectInfo *-- PackageInfo : "contains"
+ProjectInfo *-- ProjectMetrics : "has"
+
+AnalysisResult o-- ProjectInfo : "contains"
+
+TotalLOCExtractor ..> AnalysisResult : "extracts from"
+AvgLOCPerClassExtractor ..> AnalysisResult : "extracts from"
+TopClassesByLOCExtractor ..> AnalysisResult : "extracts from"
+TotalLOCExtractor ..> ProjectMetrics : "reads"
+TopClassesByLOCExtractor ..> ClassMetrics : "reads"
+
+note right of LinesOfCodeVisitor
+  **Workflow:**
+  1. Visit each TypeDeclaration (class)
+  2. Calculate physical LOC from AST node
+  3. Create/update ClassMetrics
+  4. Store in ClassInfo.setMetrics()
+  5. Repeat for methods
+end note
+
+note bottom of NodeMetrics
+  **Pattern Template Method:**
+  - calculate() is final
+  - doCalculate() is abstract
+  - Subclasses implement specific logic
+end note
+
+note top of MetricExtractor
+  **Extractors work AFTER visitors**
+  They read already-calculated metrics
+  from ClassInfo/MethodInfo objects
+end note
+
+@enduml

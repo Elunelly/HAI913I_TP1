@@ -7,37 +7,22 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.CompilationUnit;
 
-import com.model.utils.HasModifiers;
-import com.model.utils.HasVisibility;
-import com.model.utils.NodeInfo;
-import com.model.utils.NodeModifiers;
-import com.model.utils.NodeVisibility;
+import com.model.HasModifiers;
+import com.model.HasVisibility;
+import com.model.NodeInfo;
+import com.model.NodeModifiers;
+import com.model.NodeVisibility;
 
 public abstract class StructuralNode<T extends ASTNode> extends NodeInfo implements HasModifiers, HasVisibility {
 
 	protected final T node;
 	protected NodeVisibility visibility = NodeVisibility.PACKAGE;
 	protected final List<NodeModifiers> modifiers = new ArrayList<>();
-	
-	private int node_firstCharPos = -1;
-	private int node_lastCharPos = -1;
-	private int node_firstLineNum = -1;
-	private int node_lastLineNum = -1;
 
 	public StructuralNode(T node, String name) {
 		super(name);
 		this.node = Objects.requireNonNull(node, "Node cannot be null");
-		extractNodeInfo();
-	}
-	
-	private void extractNodeInfo() {
-		CompilationUnit unit = (CompilationUnit) node.getRoot();
-		this.node_firstCharPos = node.getStartPosition();
-		this.node_lastCharPos = node.getLength() + node_firstCharPos -1;
-		this.node_firstLineNum = unit.getLineNumber(node_firstCharPos);
-		this.node_lastLineNum = unit.getLineNumber(node_lastCharPos);
 	}
 	
 	public T getNode() {return node;}
@@ -67,6 +52,7 @@ public abstract class StructuralNode<T extends ASTNode> extends NodeInfo impleme
 	}
 	
 	public boolean setModifiers(int modifierFlag) {
+		setVisibility(NodeVisibility.getFrom(modifierFlag));
 		modifiers.clear();
 		return modifiers.addAll(NodeModifiers.getAllFrom(modifierFlag));
 	}
@@ -81,18 +67,6 @@ public abstract class StructuralNode<T extends ASTNode> extends NodeInfo impleme
 			""
 		;
 	}
-	
-	public int getNodeStartPosition() {return node_firstCharPos;}
-	
-	public int getNodeLastPosition() {return node_lastCharPos;}
-	
-	public int getNodeStartLine() {return node_firstLineNum;}
-	
-	public int getNodeLastLine() {return node_lastLineNum;}
-	
-	public int getNodeLength() {return node_lastCharPos - node_firstCharPos + 1;}
-	
-	public int getNodeLOC() {return node_lastLineNum - node_firstLineNum + 1;}
 	
 	public String getFullSignature() {
 		return

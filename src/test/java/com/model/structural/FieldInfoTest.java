@@ -25,9 +25,9 @@ import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
+import com.model.NodeVisibility;
 import com.model.project.PackageInfo;
 import com.model.project.ProjectInfo;
-import com.model.utils.NodeVisibility;
 
 /**
  * Comprehensive test suite for FieldInfo class.

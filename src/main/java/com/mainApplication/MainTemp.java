@@ -2,18 +2,21 @@ package com.mainApplication;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.core.ASTProcessor;
 import com.core.AnalysisResult;
-import com.model.project.ProjectInfo;
 import com.model.project.PackageInfo;
+import com.model.project.ProjectInfo;
 import com.model.structural.ClassInfo;
 import com.model.structural.FieldInfo;
 import com.model.structural.MethodInfo;
 import com.utils.table.TableUI;
+import com.visitors.metrics.LOCVisitor;
+import com.visitors.structural.ClassStructureVisitor;
 
 /**
  * Simple main class for testing the AST Analysis Tool.
@@ -121,6 +124,9 @@ public class MainTemp {
         
         // Create processor with default configuration
         ASTProcessor processor = new ASTProcessor();
+        
+        processor.addVisitor(new ClassStructureVisitor());
+        processor.addVisitor(new LOCVisitor());
         
         // Process project (exploration + parsing + visitor execution)
         AnalysisResult result = processor.processProject(projectPath);
@@ -249,6 +255,14 @@ public class MainTemp {
             System.out.println("  Implements : " + String.join(", ", classInfo.getInterfaces()));
         }
         
+        // LOC Metrics
+        if (classInfo.getMetrics().hasData()) {
+	        System.out.println("Available Metrics:");
+	        for (Entry<Enum<?>,Object> entry : classInfo.getMetrics().copyData().entrySet()) {
+	        	System.out.println("    -> %-15s: %s".formatted(entry.getKey(),entry.getValue()));
+	        }
+        }
+        
         // Methods
         List<MethodInfo> methods = classInfo.getMethods();
         System.out.println();
@@ -263,12 +277,12 @@ public class MainTemp {
                 String params = method.getParameters().isEmpty() ? 
                     "()" : 
                     "(" + String.join(", ", method.getParameters()) + ")";
-                
-                System.out.println(String.format("     %s %s%s%s", 
-                    visibility, 
-                    returnType, 
-                    method.getName(), 
-                    params));
+                System.out.println(method.getFullSignature()+"  [%d]".formatted(method.getMetrics().getLOC()));
+//                System.out.println(String.format("     %s %s%s%s", 
+//                    visibility, 
+//                    returnType, 
+//                    method.getName(), 
+//                    params));
             }
         }
         

@@ -7,15 +7,15 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.model.utils.ModelInfo;
+import com.model.NodeInfo;
+import com.visitors.LOCMetrics;
 
-public abstract class NodeMetrics<T extends ModelInfo> {
+public abstract class NodeMetrics<T extends NodeInfo> {
 	
 	private static final Logger logger = LoggerFactory.getLogger(NodeMetrics.class);
 	
 	protected final String name;
-	protected final Map<String,Object> data = new HashMap<>();
-	protected int linesOfCode = -1;
+	protected final Map<Enum<?>,Object> data = new HashMap<>();
 	protected boolean isCalculated = false;
 	
 	public NodeMetrics(String name) {
@@ -27,22 +27,13 @@ public abstract class NodeMetrics<T extends ModelInfo> {
 		this.name = name.trim();
 	}
 	
-	public final void calculate(T source) {
-		if (isCalculated) return;
-		reset();
-		doCalculate(source);
-		setCalculated(true);
-	}
-	
-	protected abstract void doCalculate(T source);
-	
 	public String getName() {return name;}
 	
-	public Map<String,Object> getData() {return Collections.unmodifiableMap(data);}
+	public Map<Enum<?>,Object> getData() {return Collections.unmodifiableMap(data);}
 	
-	public Map<String,Object> copyData() {return new HashMap<>(data);}
+	public Map<Enum<?>,Object> copyData() {return new HashMap<>(data);}
 	
-	public void addData(String key, Object value) {
+	public void addData(Enum<?> key, Object value) {
 		Object old = data.get(key);
 		data.put(key, value);
 		if (old==null)
@@ -51,30 +42,24 @@ public abstract class NodeMetrics<T extends ModelInfo> {
 			logger.debug("Change value of '%s': %s -> %s".formatted(key,old,value));
 	}
 	
-	public Object getDataBy(String key) {
+	public Object getDataBy(Enum<?> key) {
 		return this.data.get(key);
 	}
 	
 	@SuppressWarnings("unchecked")
-	public <E> E getDataBy(String key, Class<E> type) {
+	public <E> E getDataBy(Enum<?> key, Class<E> type) {
 		Object value = getDataBy(key);
 		if (value!=null && type.isInstance(value)) return (E) value;
 		return null;
 	}
 	
-	public boolean containsKey(String key) {
+	public boolean hasData() {
+		return !data.isEmpty();
+	}
+	
+	public boolean containsKey(Enum<?> key) {
 		return this.data.containsKey(key);
 	}
-	
-	public int getLinesOfCode() {return linesOfCode;}
-	
-	public void setLinesOfCode(int loc) {
-		int old = this.linesOfCode;
-		this.linesOfCode = Math.max(-1, loc);
-		logger.debug("Change value of 'linesOfCode': %d -> %d".formatted(old,this.linesOfCode));
-	}
-	
-	public boolean isLocSet() {return linesOfCode >= 0;}
 	
 	public boolean isCalculated() {return isCalculated;}
 	
@@ -89,18 +74,35 @@ public abstract class NodeMetrics<T extends ModelInfo> {
 		data.clear();
 		logger.debug("Cleared all data");
 	}
+	
+	// LINES OF CODE METRICS
+	public int getLOC() {return getKey(LOCMetrics.LINE_LENGTH);}
+	
+	public int getStartingLine() {return getKey(LOCMetrics.FIRST_LINE_NUM);}
+	
+	public int getEndingLine() {return getKey(LOCMetrics.LAST_LINE_NUM);}
+	
+	public int getLength() {return getKey(LOCMetrics.CHAR_LENGTH);}
+	
+	public int getStartingCharacter() {return getKey(LOCMetrics.FIRST_CHAR_POS);}
+	
+	public int getEndingCharacter() {return getKey(LOCMetrics.LAST_CHAR_POS);}
+	
+	private int getKey(LOCMetrics key) {
+		return data.containsKey(key)
+			? (int) getDataBy(key, key.getReturnType())
+			: -1;
+	}
 
 	@Override
 	public String toString() {
 		return (this.getClass().getSimpleName()+"{"
 				+ "name=%s, "
 				+ "data=%s, "
-				+ "linesOfCode=%d, "
 				+ "isCalculated=%s}")
 				.formatted(
 					name,
 					data,
-					linesOfCode,
 					String.valueOf(isCalculated)
 				);
 	}

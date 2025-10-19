@@ -1,4 +1,4 @@
-package com.model.utils;
+package com.model;
 
 public interface ModelInfo {
 	

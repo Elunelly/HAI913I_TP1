@@ -1,6 +1,6 @@
 package com.model.project;
 
-import com.model.utils.NodeInfo;
+import com.model.NodeInfo;
 
 public abstract class ProjectNode extends NodeInfo {
 

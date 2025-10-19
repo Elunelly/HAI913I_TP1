@@ -9,8 +9,9 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.model.NodeVisibility;
+import com.model.metrics.ClassMetrics;
 import com.model.project.PackageInfo;
-import com.model.utils.NodeVisibility;
 
 public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	
@@ -22,12 +23,21 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 	private final List<MethodInfo> methods = new ArrayList<>();
 	private final List<FieldInfo> fields = new ArrayList<>();
 	
+	private final ClassMetrics metrics;
+	
 	public ClassInfo(TypeDeclaration node, PackageInfo parentPackage) {
 		super(Objects.requireNonNull(node),node.getName().getIdentifier());
 		this.parentPackage = Objects.requireNonNull(parentPackage, "Package cannot be null for '"+name+"' class");
 		this.superClass = node.getSuperclassType()!=null ?
 				node.getSuperclassType().toString() :
 				null;
+		this.metrics = new ClassMetrics(getQualifiedName());
+	}
+
+	@Override
+	public String getQualifiedName() {
+		if (getPackageName().isBlank()) return getName();
+		else return "%s.%s".formatted(getPackageName(),getName());
 	}
 	
 	// PARENT PACKAGE
@@ -180,13 +190,11 @@ public class ClassInfo extends StructuralNode<TypeDeclaration> {
 		return copyFields().stream().filter(f -> f.getVisibility()==visibility).toList();
 	}
 	
-	// UTILITIES
-
-	public String getQualifiedName() {
-		if (getPackageName().isBlank()) return getName();
-		else return getPackageName() + "." + getName();
-	}
+	// METRICS
 	
+	public ClassMetrics getMetrics() {return metrics;}
+	
+	// UTILITIES
 	
 	@Override
 	public String getSignature() {
